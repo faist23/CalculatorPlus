@@ -12,9 +12,14 @@
 		76665AB01E512D9100442037 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 76665AAE1E512D9100442037 /* Main.storyboard */; };
 		76665AB21E512D9100442037 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76665AB11E512D9100442037 /* Assets.xcassets */; };
 		76665AB51E512D9100442037 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 76665AB31E512D9100442037 /* LaunchScreen.storyboard */; };
+		76D19AFD1E513CCF00B21AA7 /* Settings-15.png in Resources */ = {isa = PBXBuildFile; fileRef = 76D19AFC1E513CCF00B21AA7 /* Settings-15.png */; };
+		FFF4ACA6A26BF6110BD22210 /* Pods_ColorCalc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55FD28F34712BC1FB00174CA /* Pods_ColorCalc.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		129B42068A1501F4966401CE /* Pods-ColorCalc.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColorCalc.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ColorCalc/Pods-ColorCalc.debug.xcconfig"; sourceTree = "<group>"; };
+		383273595068A2836473F2AB /* Pods-ColorCalc.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColorCalc.release.xcconfig"; path = "Pods/Target Support Files/Pods-ColorCalc/Pods-ColorCalc.release.xcconfig"; sourceTree = "<group>"; };
+		55FD28F34712BC1FB00174CA /* Pods_ColorCalc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ColorCalc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		76665AA71E512D9100442037 /* ColorCalc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColorCalc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76665AAA1E512D9100442037 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		76665AAC1E512D9100442037 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -22,6 +27,7 @@
 		76665AB11E512D9100442037 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		76665AB41E512D9100442037 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		76665AB61E512D9100442037 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		76D19AFC1E513CCF00B21AA7 /* Settings-15.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Settings-15.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FFF4ACA6A26BF6110BD22210 /* Pods_ColorCalc.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,6 +47,8 @@
 			children = (
 				76665AA91E512D9100442037 /* ColorCalc */,
 				76665AA81E512D9100442037 /* Products */,
+				79D3FC4430E948211F46E07A /* Pods */,
+				8367BB42F8101C503BFCD161 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,10 +67,28 @@
 				76665AAC1E512D9100442037 /* ViewController.swift */,
 				76665AAE1E512D9100442037 /* Main.storyboard */,
 				76665AB11E512D9100442037 /* Assets.xcassets */,
+				76D19AFC1E513CCF00B21AA7 /* Settings-15.png */,
 				76665AB31E512D9100442037 /* LaunchScreen.storyboard */,
 				76665AB61E512D9100442037 /* Info.plist */,
 			);
 			path = ColorCalc;
+			sourceTree = "<group>";
+		};
+		79D3FC4430E948211F46E07A /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				129B42068A1501F4966401CE /* Pods-ColorCalc.debug.xcconfig */,
+				383273595068A2836473F2AB /* Pods-ColorCalc.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		8367BB42F8101C503BFCD161 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				55FD28F34712BC1FB00174CA /* Pods_ColorCalc.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -71,9 +98,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 76665AB91E512D9100442037 /* Build configuration list for PBXNativeTarget "ColorCalc" */;
 			buildPhases = (
+				0B44D87CF2CCE12EDA6E1B4C /* [CP] Check Pods Manifest.lock */,
 				76665AA31E512D9100442037 /* Sources */,
 				76665AA41E512D9100442037 /* Frameworks */,
 				76665AA51E512D9100442037 /* Resources */,
+				2FE10DA080CBC0C6723A2AB4 /* [CP] Embed Pods Frameworks */,
+				5289759B073870B0911350ED /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -126,11 +156,60 @@
 			files = (
 				76665AB51E512D9100442037 /* LaunchScreen.storyboard in Resources */,
 				76665AB21E512D9100442037 /* Assets.xcassets in Resources */,
+				76D19AFD1E513CCF00B21AA7 /* Settings-15.png in Resources */,
 				76665AB01E512D9100442037 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0B44D87CF2CCE12EDA6E1B4C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		2FE10DA080CBC0C6723A2AB4 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ColorCalc/Pods-ColorCalc-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5289759B073870B0911350ED /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ColorCalc/Pods-ColorCalc-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		76665AA31E512D9100442037 /* Sources */ = {
@@ -259,6 +338,7 @@
 		};
 		76665ABA1E512D9100442037 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 129B42068A1501F4966401CE /* Pods-ColorCalc.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = D8VX26DKQ9;
@@ -267,11 +347,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.spectrumimage.ColorCalc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		76665ABB1E512D9100442037 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 383273595068A2836473F2AB /* Pods-ColorCalc.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = D8VX26DKQ9;
@@ -280,6 +362,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.spectrumimage.ColorCalc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -302,6 +385,7 @@
 				76665ABB1E512D9100442037 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
