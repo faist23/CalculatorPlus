@@ -36,11 +36,39 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
     var lastButtonWasMode:Bool = false
     var decimalUsed = false
     var memoryNum:Double = 0
+    let redColor = UIColor(hue: 359/360, saturation: 0.95, brightness: 0.84, alpha: 1)
+    let lightGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.8, alpha: 1)
+    let darkGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.6, alpha: 1)
+    let mediumGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.7, alpha: 1)
+    let greenColor = UIColor(hue: 120/360, saturation: 1, brightness: 0.5, alpha: 1)
+    let goldColor = UIColor(hue: 56/360, saturation: 1, brightness: 1, alpha: 1)
+    let medGoldColor = UIColor(hue: 56/360, saturation: 1, brightness: 0.9, alpha: 1)
+    let darkGoldColor = UIColor(hue: 56/360, saturation: 1, brightness: 0.8, alpha: 1)
+    
+    @IBOutlet var operatorButtons: [UIButton]!
+    @IBOutlet var functionButtons: [UIButton]!
+    @IBOutlet var clearButtons: [UIButton]!
+    @IBOutlet var numberButtons: [UIButton]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         setupAdBanner()
+        
+// testing button color changes
+        for button in self.operatorButtons {
+            button.backgroundColor = redColor
+        }
+        for button in self.functionButtons {
+            button.backgroundColor = mediumGray
+        }
+        for button in self.clearButtons {
+            button.backgroundColor = darkGray
+        }
+        for button in self.numberButtons {
+            button.backgroundColor = lightGray
+        }
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -49,6 +77,19 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
     }
     
     @IBAction func didPressSettings(_ sender: Any) {
+        for button in self.operatorButtons {
+            button.backgroundColor = greenColor
+        }
+        for button in self.functionButtons {
+            button.backgroundColor = medGoldColor
+        }
+        for button in self.clearButtons {
+            button.backgroundColor = darkGoldColor
+        }
+        for button in self.numberButtons {
+            button.backgroundColor = goldColor
+        }
+        
     }
     
     @IBOutlet weak var memUsedLabel: UILabel!
