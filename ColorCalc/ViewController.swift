@@ -36,6 +36,8 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
     var lastButtonWasMode:Bool = false
     var decimalUsed = false
     var memoryNum:Double = 0
+
+    // define colors
     let redColor = UIColor(hue: 359/360, saturation: 0.95, brightness: 0.84, alpha: 1)
     let lightGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.8, alpha: 1)
     let darkGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.6, alpha: 1)
@@ -44,6 +46,11 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
     let goldColor = UIColor(hue: 56/360, saturation: 1, brightness: 1, alpha: 1)
     let medGoldColor = UIColor(hue: 56/360, saturation: 1, brightness: 0.9, alpha: 1)
     let darkGoldColor = UIColor(hue: 56/360, saturation: 1, brightness: 0.8, alpha: 1)
+    let whiteColor = UIColor(hue: 359/360, saturation: 0, brightness: 1, alpha: 1)
+    let medWhite = UIColor(hue: 359/360, saturation: 0, brightness: 0.9, alpha: 1)
+    let darkWhite = UIColor(hue: 359/360, saturation: 0, brightness: 0.8, alpha: 1)
+    let purpleColor = UIColor(hue: 270/360, saturation: 1, brightness: 1, alpha: 1)
+    let orangeColor = UIColor(hue: 30/360, saturation: 1, brightness: 1, alpha: 1)
     
     @IBOutlet var operatorButtons: [UIButton]!
     @IBOutlet var functionButtons: [UIButton]!
