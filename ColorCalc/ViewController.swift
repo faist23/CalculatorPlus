@@ -20,7 +20,8 @@ enum modes {
 
 class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewDelegate { // google mobile ads
     @IBOutlet weak var label: UILabel!
-    
+    var stringPassed = ""
+    let defaults = UserDefaults.standard
     let bannerView: GADBannerView = GADBannerView.init(adSize: kGADAdSizeSmartBannerPortrait)
     
     var enableInputClicksWhenVisible: Bool {
@@ -43,39 +44,172 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
     let darkGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.6, alpha: 1)
     let mediumGray = UIColor(hue: 359/360, saturation: 0, brightness: 0.7, alpha: 1)
     let greenColor = UIColor(hue: 120/360, saturation: 1, brightness: 0.5, alpha: 1)
+    let blueColor = UIColor(hue: 225/360, saturation: 1, brightness: 0.8, alpha: 1)
     let goldColor = UIColor(hue: 56/360, saturation: 1, brightness: 1, alpha: 1)
     let medGoldColor = UIColor(hue: 56/360, saturation: 1, brightness: 0.9, alpha: 1)
     let darkGoldColor = UIColor(hue: 56/360, saturation: 1, brightness: 0.8, alpha: 1)
     let whiteColor = UIColor(hue: 359/360, saturation: 0, brightness: 1, alpha: 1)
     let medWhite = UIColor(hue: 359/360, saturation: 0, brightness: 0.9, alpha: 1)
     let darkWhite = UIColor(hue: 359/360, saturation: 0, brightness: 0.8, alpha: 1)
-    let purpleColor = UIColor(hue: 270/360, saturation: 1, brightness: 1, alpha: 1)
-    let orangeColor = UIColor(hue: 30/360, saturation: 1, brightness: 1, alpha: 1)
+    let purpleColor = UIColor(hue: 270/360, saturation: 1, brightness: 0.9, alpha: 1)
+    let orangeColor = UIColor(hue: 30/360, saturation: 1, brightness: 0.9, alpha: 1)
+    
     
     @IBOutlet var operatorButtons: [UIButton]!
     @IBOutlet var functionButtons: [UIButton]!
     @IBOutlet var clearButtons: [UIButton]!
     @IBOutlet var numberButtons: [UIButton]!
+    @IBOutlet var memStoreButton: [UIButton]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         setupAdBanner()
         
-// testing button color changes
-        for button in self.operatorButtons {
-            button.backgroundColor = redColor
+        if defaults.object(forKey: "colorDefault") != nil {
+            loadDefaults()
         }
-        for button in self.functionButtons {
-            button.backgroundColor = mediumGray
+print("String passed: ", stringPassed)
+        if stringPassed == "1" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = redColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = lightGray
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = mediumGray
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGray
+            }
+        } else if stringPassed == "2" {
+            for button in self.operatorButtons {
+                button.backgroundColor = redColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = goldColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medGoldColor
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGoldColor
+            }
+        } else if stringPassed == "3" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = redColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if stringPassed == "4" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = blueColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = lightGray
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = mediumGray
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGray
+            }
+        } else if stringPassed == "5" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = blueColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = goldColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medGoldColor
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGoldColor
+            }
+        } else if stringPassed == "6" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = blueColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if stringPassed == "7" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = greenColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = goldColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medGoldColor
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGoldColor
+            }
+        } else if stringPassed == "8" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = greenColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if stringPassed == "9" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = purpleColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if stringPassed == "10" {
+            defaults.set (stringPassed, forKey: "colorDefault")
+            for button in self.operatorButtons {
+                button.backgroundColor = orangeColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
         }
-        for button in self.clearButtons {
-            button.backgroundColor = darkGray
-        }
-        for button in self.numberButtons {
-            button.backgroundColor = lightGray
-        }
-        
     }
     
     override func didReceiveMemoryWarning() {
@@ -83,7 +217,8 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func didPressSettings(_ sender: Any) {
+/*    @IBAction func didPressSettings(_ sender: Any) {
+ //       self.performSegue(withIdentifier: "settings", sender: nil)
         for button in self.operatorButtons {
             button.backgroundColor = greenColor
         }
@@ -97,7 +232,10 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
             button.backgroundColor = goldColor
         }
         
-    }
+    } */
+    
+
+    
     
     @IBOutlet weak var memUsedLabel: UILabel!
     @IBOutlet weak var labelDarkGray: UILabel!
@@ -125,18 +263,29 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
         UIDevice.current.playInputClick()
         memoryNum = 0
         memUsedLabel.textColor = labelDarkGray.textColor
+/*        for button in self.memStoreButton {
+            button.backgroundColor = mediumGray
+        } */
     }
     @IBAction func didPressMPlus(_ sender: Any) {
         UIDevice.current.playInputClick()
         memoryNum += Double(labelString)!
         memUsedLabel.textColor = labelBlack.textColor
         lastButtonWasMode = true
+        decimalUsed = false
+/*        for button in self.memStoreButton {
+            button.backgroundColor = darkGray
+        } */
     }
     @IBAction func didPressMMinus(_ sender: Any) {
         UIDevice.current.playInputClick()
         memoryNum -= Double(labelString)!
         memUsedLabel.textColor = labelBlack.textColor
         lastButtonWasMode = true
+        decimalUsed = false
+/*        for button in self.memStoreButton {
+            button.backgroundColor = darkGray
+        } */
     }
     @IBAction func didPressMRecall(_ sender: Any) {
         UIDevice.current.playInputClick()
@@ -180,6 +329,7 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
         } else if currentMode != .not_set {
             (sender as AnyObject).setTitle("AC", for: .normal)
         }
+        decimalUsed = false
         labelString = "0"
         label.text = "0"
     }
@@ -192,7 +342,6 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
             if sender.titleLabel?.text == "." {
                 decimalUsed = true
             }
-            
             if lastButtonWasMode {
                 lastButtonWasMode = false
                 labelString = "0"
@@ -201,6 +350,7 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
                 return
             }
             labelString = labelString.appending(stringValue!)
+            print(labelString)
             updateText()
         }
     }
@@ -265,6 +415,8 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
         label.text = formatter.string(from: num)
         if labelString[labelString.index(before: labelString.endIndex)] == "." {
             label.text = label.text! + "."
+        } else if decimalUsed == true && labelString.substring(from:labelString.index(labelString.endIndex, offsetBy: -2)) == ".0" {
+            label.text = label.text! + ".0"
         }
     }
     
@@ -274,7 +426,7 @@ class ViewController: UIViewController, UIInputViewAudioFeedback, GADBannerViewD
         if currentMode != .not_set && (newMode == .addition || newMode == .subtraction) {
             let exp: NSExpression = NSExpression(format: equation)
             saveNum = exp.expressionValue(with: nil, context: nil) as! Double
-            equation = "\(saveNum)"
+ //           equation = "\(saveNum)"
             labelString = "\(saveNum)"
             updateText()
         }
@@ -287,6 +439,139 @@ print(equation)
   print(currentMode,newMode,saveNum,saveNum2)
     }
     
+    func loadDefaults(){
+        if defaults.object (forKey: "colorDefault") as! String == "1" {
+            for button in self.operatorButtons {
+                button.backgroundColor = redColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = lightGray
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = mediumGray
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGray
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "2" {
+            for button in self.operatorButtons {
+                button.backgroundColor = redColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = goldColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medGoldColor
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGoldColor
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "3" {
+            for button in self.operatorButtons {
+                button.backgroundColor = redColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "4" {
+            for button in self.operatorButtons {
+                button.backgroundColor = blueColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = lightGray
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = mediumGray
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGray
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "5" {
+            for button in self.operatorButtons {
+                button.backgroundColor = blueColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = goldColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medGoldColor
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGoldColor
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "6" {
+            for button in self.operatorButtons {
+                button.backgroundColor = blueColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "7" {
+            for button in self.operatorButtons {
+                button.backgroundColor = greenColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = goldColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medGoldColor
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkGoldColor
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "8" {
+            for button in self.operatorButtons {
+                button.backgroundColor = greenColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "9" {
+            for button in self.operatorButtons {
+                button.backgroundColor = purpleColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        } else if defaults.object (forKey: "colorDefault") as! String == "10" {
+            for button in self.operatorButtons {
+                button.backgroundColor = orangeColor
+            }
+            for button in self.numberButtons {
+                button.backgroundColor = whiteColor
+            }
+            for button in self.functionButtons {
+                button.backgroundColor = medWhite
+            }
+            for button in self.clearButtons {
+                button.backgroundColor = darkWhite
+            }
+        }    
+    }
     
     // google ads
     func setupAdBanner() {
