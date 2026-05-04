@@ -1,7 +1,15 @@
 import SwiftUI
 
+enum CalculatorOperation {
+    case add, subtract, multiply, divide, none
+}
+
 struct StandardCalculatorView: View {
     @State private var displayText = "0"
+    @State private var currentValue: Double = 0
+    @State private var previousValue: Double = 0
+    @State private var operation: CalculatorOperation = .none
+    @State private var isTypingNumber = false
     
     let buttons = [
         ["AC", "+/-", "%", "÷"],
@@ -62,16 +70,83 @@ struct StandardCalculatorView: View {
     }
     
     func buttonTapped(_ button: String) {
-        // Placeholder for calculator logic
-        if button == "AC" {
-            displayText = "0"
-        } else {
-            if displayText == "0" {
-                displayText = button
-            } else if displayText.count < 9 { // Prevent overflow for now
+        switch button {
+        case "0"..."9", ".":
+            if isTypingNumber {
+                if button == "." && displayText.contains(".") { return }
                 displayText += button
+            } else {
+                displayText = button == "." ? "0." : button
+                isTypingNumber = true
             }
+            currentValue = Double(displayText) ?? 0
+        case "AC":
+            displayText = "0"
+            currentValue = 0
+            previousValue = 0
+            operation = .none
+            isTypingNumber = false
+        case "+/-":
+            currentValue = -currentValue
+            displayText = format(currentValue)
+        case "%":
+            currentValue = currentValue / 100
+            displayText = format(currentValue)
+        case "+":
+            setOperation(.add)
+        case "-":
+            setOperation(.subtract)
+        case "×":
+            setOperation(.multiply)
+        case "÷":
+            setOperation(.divide)
+        case "=":
+            calculateResult()
+        default:
+            break
         }
+    }
+    
+    private func setOperation(_ op: CalculatorOperation) {
+        if isTypingNumber {
+            calculateResult()
+        }
+        previousValue = currentValue
+        operation = op
+        isTypingNumber = false
+    }
+    
+    private func calculateResult() {
+        switch operation {
+        case .add:
+            currentValue = previousValue + currentValue
+        case .subtract:
+            currentValue = previousValue - currentValue
+        case .multiply:
+            currentValue = previousValue * currentValue
+        case .divide:
+            if currentValue != 0 {
+                currentValue = previousValue / currentValue
+            } else {
+                displayText = "Error"
+                isTypingNumber = false
+                return
+            }
+        case .none:
+            break
+        }
+        displayText = format(currentValue)
+        operation = .none
+        isTypingNumber = false
+    }
+    
+    private func format(_ number: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 8
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        return formatter.string(from: NSNumber(value: number)) ?? "0"
     }
 }
 
