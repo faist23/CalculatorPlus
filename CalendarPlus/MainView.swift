@@ -5,15 +5,18 @@ struct MainView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            if geometry.size.width > geometry.size.height {
-                if useScientific {
-                    ScientificCalculatorView(useScientific: $useScientific)
+            ZStack {
+                if geometry.size.width > geometry.size.height {
+                    if useScientific {
+                        ScientificCalculatorView(useScientific: $useScientific)
+                    } else {
+                        FinancialCalculatorView(useScientific: $useScientific)
+                    }
                 } else {
-                    FinancialCalculatorView(useScientific: $useScientific)
+                    StandardCalculatorView()
                 }
-            } else {
-                StandardCalculatorView()
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
     }
 }

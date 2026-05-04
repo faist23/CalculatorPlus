@@ -224,7 +224,6 @@ struct SciButton: View {
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(title == "f" ? .orange : (title == "g" ? .blue : .white))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.vertical, 14)
                 .background(
                     title == "ENTER" ? Color.blue :
                         (title == "f" ? Color.black :
