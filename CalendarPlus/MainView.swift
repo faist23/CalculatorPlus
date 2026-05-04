@@ -12,13 +12,7 @@ struct MainView: View {
                     FinancialCalculatorView(useScientific: $useScientific)
                 }
             } else {
-                VStack {
-                    Text("Standard Calculator")
-                        .font(.largeTitle)
-                        .padding()
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                StandardCalculatorView()
             }
         }
     }

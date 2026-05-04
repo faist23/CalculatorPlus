@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		040CF18AA4101C200CA73664 /* StandardCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */; };
 		7640BB6D1E7C3D0D009886DE /* FinancialCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7640BB6C1E7C3D0D009886DE /* FinancialCalculatorView.swift */; };
 		76665AAB1E512D9100442037 /* CalendarPlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76665AAA1E512D9100442037 /* CalendarPlusApp.swift */; };
 		76665AAD1E512D9100442037 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76665AAC1E512D9100442037 /* MainView.swift */; };
@@ -48,9 +49,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		129B42068A1501F4966401CE /* Pods-ColorCalc.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColorCalc.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CalendarPlus/Pods-ColorCalc.debug.xcconfig"; sourceTree = "<group>"; };
-		383273595068A2836473F2AB /* Pods-ColorCalc.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColorCalc.release.xcconfig"; path = "Pods/Target Support Files/Pods-CalendarPlus/Pods-ColorCalc.release.xcconfig"; sourceTree = "<group>"; };
-		55FD28F34712BC1FB00174CA /* Pods_ColorCalc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ColorCalc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7640BB6C1E7C3D0D009886DE /* FinancialCalculatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinancialCalculatorView.swift; sourceTree = "<group>"; };
 		76665AA71E512D9100442037 /* CalendarPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalendarPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76665AAA1E512D9100442037 /* CalendarPlusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPlusApp.swift; sourceTree = "<group>"; };
@@ -91,6 +89,7 @@
 		766AFD4C1E9D1B8B0048B49A /* ColorCalc_icon_10@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ColorCalc_icon_10@3x.png"; path = "resources/ColorCalc_icon_10@3x.png"; sourceTree = "<group>"; };
 		76B38E9E1E9E9B9E00D6B2E5 /* ColorCalc_startup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ColorCalc_startup.png; sourceTree = "<group>"; };
 		76D19AFC1E513CCF00B21AA7 /* Settings-15.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Settings-15.png"; sourceTree = "<group>"; };
+		F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StandardCalculatorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,8 +108,6 @@
 			children = (
 				76665AA91E512D9100442037 /* CalendarPlus */,
 				76665AA81E512D9100442037 /* Products */,
-				79D3FC4430E948211F46E07A /* Pods */,
-				8367BB42F8101C503BFCD161 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -135,6 +132,7 @@
 				76D19AFC1E513CCF00B21AA7 /* Settings-15.png */,
 				76665AB31E512D9100442037 /* LaunchScreen.storyboard */,
 				76665AB61E512D9100442037 /* Info.plist */,
+				F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */,
 			);
 			path = CalendarPlus;
 			sourceTree = "<group>";
@@ -174,23 +172,6 @@
 				766AFD4C1E9D1B8B0048B49A /* ColorCalc_icon_10@3x.png */,
 			);
 			name = resources;
-			sourceTree = "<group>";
-		};
-		79D3FC4430E948211F46E07A /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				129B42068A1501F4966401CE /* Pods-ColorCalc.debug.xcconfig */,
-				383273595068A2836473F2AB /* Pods-ColorCalc.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
-		8367BB42F8101C503BFCD161 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				55FD28F34712BC1FB00174CA /* Pods_ColorCalc.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -301,6 +282,7 @@
 				76665AAD1E512D9100442037 /* MainView.swift in Sources */,
 				76665AAB1E512D9100442037 /* CalendarPlusApp.swift in Sources */,
 				7640BB6D1E7C3D0D009886DE /* FinancialCalculatorView.swift in Sources */,
+				040CF18AA4101C200CA73664 /* StandardCalculatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
