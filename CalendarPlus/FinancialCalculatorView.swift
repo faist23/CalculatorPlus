@@ -193,6 +193,8 @@ struct FinButton: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 16, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
                 .foregroundColor(title == "f" ? .orange : (title == "g" ? .blue : .white))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
