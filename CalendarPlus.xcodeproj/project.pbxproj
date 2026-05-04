@@ -46,6 +46,7 @@
 		766AFD6A1E9D1B8B0048B49A /* ColorCalc_icon_10@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 766AFD4C1E9D1B8B0048B49A /* ColorCalc_icon_10@3x.png */; };
 		76B38E9F1E9E9B9E00D6B2E5 /* ColorCalc_startup.png in Resources */ = {isa = PBXBuildFile; fileRef = 76B38E9E1E9E9B9E00D6B2E5 /* ColorCalc_startup.png */; };
 		76D19AFD1E513CCF00B21AA7 /* Settings-15.png in Resources */ = {isa = PBXBuildFile; fileRef = 76D19AFC1E513CCF00B21AA7 /* Settings-15.png */; };
+		A6CD10B16E1ABCDD42862541 /* ScientificCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1B0AC4CD64C58A630BCF2 /* ScientificCalculatorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,6 +90,7 @@
 		766AFD4C1E9D1B8B0048B49A /* ColorCalc_icon_10@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ColorCalc_icon_10@3x.png"; path = "resources/ColorCalc_icon_10@3x.png"; sourceTree = "<group>"; };
 		76B38E9E1E9E9B9E00D6B2E5 /* ColorCalc_startup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ColorCalc_startup.png; sourceTree = "<group>"; };
 		76D19AFC1E513CCF00B21AA7 /* Settings-15.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Settings-15.png"; sourceTree = "<group>"; };
+		98A1B0AC4CD64C58A630BCF2 /* ScientificCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScientificCalculatorView.swift; sourceTree = "<group>"; };
 		F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StandardCalculatorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -133,6 +135,7 @@
 				76665AB31E512D9100442037 /* LaunchScreen.storyboard */,
 				76665AB61E512D9100442037 /* Info.plist */,
 				F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */,
+				98A1B0AC4CD64C58A630BCF2 /* ScientificCalculatorView.swift */,
 			);
 			path = CalendarPlus;
 			sourceTree = "<group>";
@@ -283,6 +286,7 @@
 				76665AAB1E512D9100442037 /* CalendarPlusApp.swift in Sources */,
 				7640BB6D1E7C3D0D009886DE /* FinancialCalculatorView.swift in Sources */,
 				040CF18AA4101C200CA73664 /* StandardCalculatorView.swift in Sources */,
+				A6CD10B16E1ABCDD42862541 /* ScientificCalculatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
