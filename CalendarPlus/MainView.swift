@@ -1,22 +1,24 @@
 import SwiftUI
 
 struct MainView: View {
-    @State private var useScientific = false
+    @State private var useScientific: Bool = UserDefaults.standard.bool(forKey: "hpUseScientific")
+    @State private var financialEngine = HPFinancialEngine()
+    @State private var scientificEngine = HPScientificEngine()
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
+            Group {
                 if geometry.size.width > geometry.size.height {
                     if useScientific {
-                        ScientificCalculatorView(useScientific: $useScientific)
+                        ScientificCalculatorView(useScientific: $useScientific, engine: scientificEngine)
                     } else {
-                        FinancialCalculatorView(useScientific: $useScientific)
+                        FinancialCalculatorView(useScientific: $useScientific, engine: financialEngine)
                     }
                 } else {
                     StandardCalculatorView()
                 }
             }
-            .frame(width: geometry.size.width, height: geometry.size.height)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

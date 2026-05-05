@@ -1,213 +1,230 @@
 import SwiftUI
 
+// MARK: - HP 12C Financial Calculator
+
 struct FinancialCalculatorView: View {
     @Binding var useScientific: Bool
-    
-    @State private var displayText = "0.00"
-    @State private var stack: [Double] = [0.0, 0.0, 0.0, 0.0] // X, Y, Z, T
-    @State private var isTypingNumber = false
-    
-    let row1 = ["n", "i", "PV", "PMT", "FV", "CHS", "7", "8", "9", "÷"]
-    let row2 = ["yˣ", "1/x", "%T", "Δ%", "%", "EEX", "4", "5", "6", "×"]
-    let row3 = ["R/S", "SST", "R↓", "x≷y", "CLX", "ENTER", "1", "2", "3", "-"]
-    let row4 = ["ON", "f", "g", "STO", "RCL", "0", ".", "Σ+", "+"]
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("HP 12C Style")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Spacer()
-                Button("Switch to 15C (Sci)") {
-                    useScientific = true
-                }
-                .font(.subheadline)
-                .padding(6)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(6)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
-            
-            // LCD Display
-            HStack {
-                Spacer()
-                Text(displayText)
-                    .font(.custom("Courier", size: 64))
-                    .foregroundColor(.black)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-            .background(Color(red: 0.65, green: 0.7, blue: 0.55))
-            .cornerRadius(8)
-            .padding(.horizontal, 24)
-            
-            Spacer()
-            
-            // Keypad
-            Grid(horizontalSpacing: 12, verticalSpacing: 16) {
-                GridRow {
-                    ForEach(row1, id: \.self) { btn in FinButton(title: btn) { buttonTapped(btn) } }
-                }
-                GridRow {
-                    ForEach(row2, id: \.self) { btn in FinButton(title: btn) { buttonTapped(btn) } }
-                }
-                GridRow {
-                    ForEach(row3, id: \.self) { btn in FinButton(title: btn) { buttonTapped(btn) } }
-                }
-                GridRow {
-                    FinButton(title: row4[0]) { buttonTapped(row4[0]) }
-                    FinButton(title: row4[1]) { buttonTapped(row4[1]) }
-                    FinButton(title: row4[2]) { buttonTapped(row4[2]) }
-                    FinButton(title: row4[3]) { buttonTapped(row4[3]) }
-                    FinButton(title: row4[4]) { buttonTapped(row4[4]) }
-                    FinButton(title: row4[5]) { buttonTapped(row4[5]) }
-                        .gridCellColumns(2)
-                    FinButton(title: row4[6]) { buttonTapped(row4[6]) }
-                    FinButton(title: row4[7]) { buttonTapped(row4[7]) }
-                    FinButton(title: row4[8]) { buttonTapped(row4[8]) }
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
-        }
-        .background(Color(red: 0.15, green: 0.15, blue: 0.15).ignoresSafeArea())
-    }
-    
-    private func buttonTapped(_ button: String) {
-        switch button {
-        case "0"..."9", ".":
-            if isTypingNumber {
-                if button == "." && displayText.contains(".") { return }
-                displayText += button
-            } else {
-                displayText = button == "." ? "0." : button
-                isTypingNumber = true
-            }
-            stack[0] = Double(displayText) ?? 0.0
-            
-        case "ENTER":
-            isTypingNumber = false
-            pushStack()
-            displayText = format(stack[0])
-            
-        case "CHS":
-            if isTypingNumber {
-                if displayText.hasPrefix("-") {
-                    displayText.removeFirst()
-                } else {
-                    displayText = "-" + displayText
-                }
-                stack[0] = Double(displayText) ?? 0.0
-            } else {
-                stack[0] = -stack[0]
-                displayText = format(stack[0])
-            }
-            
-        case "CLX":
-            isTypingNumber = false
-            stack[0] = 0.0
-            displayText = "0.00"
-            
-        case "+":
-            executeOperation { $0 + $1 }
-        case "-":
-            executeOperation { $0 - $1 }
-        case "×":
-            executeOperation { $0 * $1 }
-        case "÷":
-            if stack[0] != 0 {
-                executeOperation { $0 / $1 }
-            } else {
-                displayText = "Error"
-                isTypingNumber = false
-            }
-            
-        case "1/x":
-            if stack[0] != 0 {
-                stack[0] = 1.0 / stack[0]
-                displayText = format(stack[0])
-                isTypingNumber = false
-            }
-            
-        case "x≷y":
-            let temp = stack[0]
-            stack[0] = stack[1]
-            stack[1] = temp
-            displayText = format(stack[0])
-            isTypingNumber = false
-            
-        case "R↓":
-            let temp = stack[0]
-            stack[0] = stack[1]
-            stack[1] = stack[2]
-            stack[2] = stack[3]
-            stack[3] = temp
-            displayText = format(stack[0])
-            isTypingNumber = false
-            
-        default:
-            break
-        }
-    }
-    
-    private func pushStack() {
-        stack[3] = stack[2]
-        stack[2] = stack[1]
-        stack[1] = stack[0]
-    }
-    
-    private func popStack() {
-        stack[0] = stack[1]
-        stack[1] = stack[2]
-        stack[2] = stack[3]
-    }
-    
-    private func executeOperation(_ operation: (Double, Double) -> Double) {
-        let result = operation(stack[1], stack[0])
-        popStack()
-        stack[0] = result
-        displayText = format(stack[0])
-        isTypingNumber = false
-    }
-    
-    private func format(_ number: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 8
-        formatter.numberStyle = .decimal
-        formatter.usesGroupingSeparator = true
-        return formatter.string(from: NSNumber(value: number)) ?? "0.00"
-    }
-}
+    let engine: HPFinancialEngine
 
-struct FinButton: View {
-    let title: String
-    let action: () -> Void
-    
+    @State private var shiftMode: HPShiftMode = .none
+    @State private var showModeMenu = false
+
+    // Rows 1 & 2: full 10-key rows
+    let row1: [HPKey] = [
+        HPKey("n",   f: "AMORT", g: "12÷"),
+        HPKey("i",   f: "INT",   g: "12×"),
+        HPKey("PV",  f: "NPV",   g: "CF₀"),
+        HPKey("PMT", f: "RND",   g: "CFⱼ"),
+        HPKey("FV",  f: "IRR",   g: "Nⱼ"),
+        HPKey("CHS", f: "DATE",  g: "D.MY"),
+        HPKey("7",   f: "BEG",   g: "x̄"),
+        HPKey("8",   f: "END",   g: "s"),
+        HPKey("9",   f: "MEM",   g: "n!"),
+        HPKey("÷",   f: "→",     g: "x̂"),
+    ]
+    let row2: [HPKey] = [
+        HPKey("yˣ",  f: "x̂,r",  g: "Δ%"),
+        HPKey("1/x", f: "x≷F",  g: "%T"),
+        HPKey("%T",  f: "Σ+",   g: "%"),
+        HPKey("Δ%",  f: "ΔDAYS", g: "EEX"),
+        HPKey("%",   f: "D",    g: "ALG"),
+        HPKey("EEX", f: "M",    g: "PRGM"),
+        HPKey("4",   f: "CF₀",  g: "ȳ"),
+        HPKey("5",   f: "CFⱼ",  g: "r"),
+        HPKey("6",   f: "Nⱼ",   g: "ŷ"),
+        HPKey("×",   f: "⌀,r",  g: "ȳ"),
+    ]
+
+    // Rows 3 & 4 split: left 5 cols, tall ENTER, right 4 cols
+    let row3Left: [HPKey] = [
+        HPKey("R/S",   f: "PSE",   g: "P/R"),
+        HPKey("SST",   f: "BST",   g: "GTO"),
+        HPKey("R↓",    f: "LSTx",  g: "RTN"),
+        HPKey("x≷y",   f: "→H.MS", g: "→H"),
+        HPKey("CLX",   f: "→RAD",  g: "→DEG"),
+    ]
+    let row4Left: [HPKey] = [
+        HPKey("⚙",    f: "",      g: ""),
+        HPKey("f",    f: "",      g: ""),
+        HPKey("g",    f: "",      g: ""),
+        HPKey("STO",  f: "FDISP", g: "CLΣ"),
+        HPKey("RCL",  f: "ΣReg",  g: "CLx"),
+    ]
+    let row3Right: [HPKey] = [
+        HPKey("1",  f: "→$",   g: "INT"),
+        HPKey("2",  f: "→P",   g: "FRAC"),
+        HPKey("3",  f: "N!",   g: "INTG"),
+        HPKey("-",  f: "→P,r", g: "ABS"),
+    ]
+    let row4Right: [HPKey] = [
+        HPKey("0",  f: "x!",  g: "x̄"),
+        HPKey(".",  f: "",    g: "→H"),
+        HPKey("Σ+", f: "Σ-", g: "n!"),
+        HPKey("+",  f: "T",  g: "Pxy"),
+    ]
+    let enterKey = HPKey("ENTER", f: "PRFX", g: "LSTx")
+
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 16, weight: .bold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.4)
-                .foregroundColor(title == "f" ? .orange : (title == "g" ? .blue : .white))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    title == "ENTER" ? Color.blue :
-                        (title == "f" ? Color.black :
-                            (title == "g" ? Color.black :
-                                (title >= "0" && title <= "9" || title == "." ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.black)))
-                )
-                .cornerRadius(4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                )
+        VStack(spacing: 6) {
+            lcdDisplay
+
+            GeometryReader { geo in
+                let hPad: CGFloat = 14
+                let hGap: CGFloat = 5
+                let vGap: CGFloat = 5
+                let cols: CGFloat = 10
+                let btnW = (geo.size.width - hPad * 2 - hGap * (cols - 1)) / cols
+                let btnH = min(btnW * 1.3, (geo.size.height - vGap * 3) / 4)
+                let tallH = btnH * 2 + vGap
+
+                VStack(spacing: vGap) {
+                    HStack(spacing: hGap) {
+                        ForEach(row1.indices, id: \.self) { i in
+                            HPButtonView(key: row1[i], width: btnW, height: btnH,
+                                         shiftMode: shiftMode) { keyTapped(row1[i]) }
+                        }
+                    }
+                    HStack(spacing: hGap) {
+                        ForEach(row2.indices, id: \.self) { i in
+                            HPButtonView(key: row2[i], width: btnW, height: btnH,
+                                         shiftMode: shiftMode) { keyTapped(row2[i]) }
+                        }
+                    }
+                    HStack(alignment: .top, spacing: hGap) {
+                        VStack(spacing: vGap) {
+                            HStack(spacing: hGap) {
+                                ForEach(row3Left.indices, id: \.self) { i in
+                                    HPButtonView(key: row3Left[i], width: btnW, height: btnH,
+                                                 shiftMode: shiftMode) { keyTapped(row3Left[i]) }
+                                }
+                            }
+                            HStack(spacing: hGap) {
+                                ForEach(row4Left.indices, id: \.self) { i in
+                                    let key = row4Left[i]
+                                    HPButtonView(key: key, width: btnW, height: btnH,
+                                                 shiftMode: shiftMode,
+                                                 isSettingsKey: key.main == "⚙",
+                                                 onSettings: { showModeMenu = true }) { keyTapped(key) }
+                                }
+                            }
+                        }
+
+                        HPButtonView(key: enterKey, width: btnW, height: tallH,
+                                     shiftMode: shiftMode) { keyTapped(enterKey) }
+
+                        VStack(spacing: vGap) {
+                            HStack(spacing: hGap) {
+                                ForEach(row3Right.indices, id: \.self) { i in
+                                    HPButtonView(key: row3Right[i], width: btnW, height: btnH,
+                                                 shiftMode: shiftMode) { keyTapped(row3Right[i]) }
+                                }
+                            }
+                            HStack(spacing: hGap) {
+                                ForEach(row4Right.indices, id: \.self) { i in
+                                    HPButtonView(key: row4Right[i], width: btnW, height: btnH,
+                                                 shiftMode: shiftMode) { keyTapped(row4Right[i]) }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, hPad)
+                .frame(maxHeight: .infinity, alignment: .center)
+            }
         }
+        .background(Color(red: 0.13, green: 0.13, blue: 0.13).ignoresSafeArea())
+        .confirmationDialog("Calculator Mode", isPresented: $showModeMenu, titleVisibility: .visible) {
+            Button("Financial") {
+                useScientific = false
+                UserDefaults.standard.set(false, forKey: "hpUseScientific")
+            }
+            Button("Scientific") {
+                useScientific = true
+                UserDefaults.standard.set(true, forKey: "hpUseScientific")
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    // MARK: - LCD
+
+    @ViewBuilder
+    private var lcdDisplay: some View {
+        let hasTape = !engine.tape.isEmpty
+        ZStack {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(red: 0.62, green: 0.68, blue: 0.52))
+
+            VStack(spacing: 0) {
+                HStack {
+                    Text("f")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(Color(red: 0.88, green: 0.52, blue: 0.08))
+                        .opacity(shiftMode == .f ? 1 : 0.25)
+                    Text("g")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(Color(red: 0.3, green: 0.5, blue: 0.95))
+                        .opacity(shiftMode == .g ? 1 : 0.25)
+                    ForEach(engine.annunciators, id: \.self) { ann in
+                        Text(ann)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(.black.opacity(0.65))
+                            .padding(.leading, 4)
+                    }
+                    Spacer()
+                    Button { showModeMenu = true } label: {
+                        Image(systemName: "gear")
+                            .font(.system(size: 13))
+                            .foregroundColor(.black.opacity(0.45))
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.top, 5)
+                .frame(height: 20)
+
+                if hasTape {
+                    TapeView(entries: engine.tape, onRecall: { engine.recallTapeValue($0) })
+                        .frame(maxHeight: 56)
+                }
+
+                Spacer(minLength: 4)
+
+                HStack {
+                    Spacer()
+                    Text(engine.displayText)
+                        .font(.custom("Courier", size: 34))
+                        .foregroundColor(.black.opacity(0.85))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+                }
+                .padding(.horizontal, 8)
+                .padding(.bottom, 5)
+                .frame(height: 42)
+            }
+        }
+        .frame(height: hasTape ? 140 : 68)
+        .padding(.horizontal, 14)
+        .padding(.top, 6)
+    }
+
+    // MARK: - Key handling
+
+    private func keyTapped(_ key: HPKey) {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        let label = key.main
+
+        if label == "f" { shiftMode = shiftMode == .f ? .none : .f; return }
+        if label == "g" { shiftMode = shiftMode == .g ? .none : .g; return }
+        if label == "⚙" { showModeMenu = true; return }
+
+        let effective: String
+        switch shiftMode {
+        case .f: effective = key.fShift.isEmpty ? label : key.fShift
+        case .g: effective = key.gShift.isEmpty ? label : key.gShift
+        case .none: effective = label
+        }
+        shiftMode = .none
+
+        engine.dispatch(effective)
     }
 }
