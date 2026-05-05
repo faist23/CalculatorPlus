@@ -66,11 +66,13 @@ struct HPButtonView: View {
                     VStack(spacing: 0) {
                         ForEach(Array("ENTER".enumerated()), id: \.offset) { _, ch in
                             Text(String(ch))
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: max(11, height * 0.16), weight: .bold))
                                 .foregroundColor(.white)
                         }
                     }
                 } else {
+                    let shiftH    = max(9.0, height * 0.17)
+                    let shiftFont = max(7.0, height * 0.12)
                     VStack(spacing: 1) {
                         // f-shift label (gold, above key)
                         Group {
@@ -82,19 +84,19 @@ struct HPButtonView: View {
                                 Color.clear
                             }
                         }
-                        .font(.system(size: 8.5, weight: .semibold))
-                        .lineLimit(1).minimumScaleFactor(0.5)
-                        .frame(height: 11)
+                        .font(.system(size: shiftFont, weight: .semibold))
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                        .frame(height: shiftH)
 
                         // Main label
                         if isF || isG {
                             Text(key.main)
-                                .font(.system(size: 13, weight: .black))
+                                .font(.system(size: max(13, height * 0.22), weight: .black))
                                 .foregroundColor(.white)
                         } else {
                             Text(key.main)
                                 .font(.system(size: mainFontSize, weight: .bold))
-                                .lineLimit(1).minimumScaleFactor(0.35)
+                                .lineLimit(1).minimumScaleFactor(0.65)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                         }
@@ -109,9 +111,9 @@ struct HPButtonView: View {
                                 Color.clear
                             }
                         }
-                        .font(.system(size: 8.5, weight: .semibold))
-                        .lineLimit(1).minimumScaleFactor(0.5)
-                        .frame(height: 11)
+                        .font(.system(size: shiftFont, weight: .semibold))
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                        .frame(height: shiftH)
                     }
                 }
             }
@@ -122,9 +124,11 @@ struct HPButtonView: View {
 
     private var mainFontSize: CGFloat {
         let len = key.main.count
-        if len >= 5 { return 10 }
-        if len >= 4 { return 11 }
-        if len >= 3 { return 12 }
-        return 14
+        let (scale, cap): (CGFloat, CGFloat)
+        if len >= 5      { (scale, cap) = (0.24, 16) }
+        else if len >= 4 { (scale, cap) = (0.28, 17) }
+        else if len >= 3 { (scale, cap) = (0.32, 18) }
+        else             { (scale, cap) = (0.40, 20) }
+        return min(max(10.5, height * scale), cap)
     }
 }
