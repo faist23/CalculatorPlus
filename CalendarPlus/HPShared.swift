@@ -50,12 +50,22 @@ struct HPButtonView: View {
     var body: some View {
         Button(action: isSettingsKey ? (onSettings ?? action) : action) {
             ZStack {
-                bodyColor
-                    .cornerRadius(3)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(bodyColor)
+                    // top-edge highlight gives keys a raised, physical look
                     .overlay(
                         RoundedRectangle(cornerRadius: 3)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                            .fill(LinearGradient(
+                                colors: [Color.white.opacity(0.20), Color.clear],
+                                startPoint: .top,
+                                endPoint: UnitPoint(x: 0.5, y: 0.55)
+                            ))
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 3)
+                            .stroke(Color.white.opacity(0.14), lineWidth: 0.5)
+                    )
+                    .shadow(color: .black.opacity(0.50), radius: 2, x: 0, y: 1.5)
 
                 if isSettingsKey {
                     Image(systemName: "gear")
