@@ -7,18 +7,23 @@ struct MainView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
             Group {
-                if geometry.size.width > geometry.size.height {
+                if isLandscape {
                     if useScientific {
                         ScientificCalculatorView(useScientific: $useScientific, engine: scientificEngine)
+                            .transition(.opacity)
                     } else {
                         FinancialCalculatorView(useScientific: $useScientific, engine: financialEngine)
+                            .transition(.opacity)
                     }
                 } else {
                     StandardCalculatorView()
+                        .transition(.opacity)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .animation(.easeInOut(duration: 0.25), value: isLandscape)
         }
     }
 }
