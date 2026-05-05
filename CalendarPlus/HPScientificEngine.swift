@@ -112,7 +112,7 @@ final class HPScientificEngine {
                 }
                 stack[0] = parseDisplay()
             } else {
-                stack[0] = -stack[0]; displayText = fmt(stack[0])
+                stack[0] = -stack[0]; displayText = fmt(stack[0]); stackLiftEnabled = true
             }
 
         case "CLx":
@@ -121,14 +121,14 @@ final class HPScientificEngine {
         case "x≷y":
             if isTypingNumber { commitTyping() }
             stack.swapAt(0, 1)
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "R↓":
             if isTypingNumber { commitTyping() }
             let t = stack[0]
             stack[0] = stack[1]; stack[1] = stack[2]
             stack[2] = stack[3]; stack[3] = t
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         // ARITHMETIC
         case "+":
@@ -215,7 +215,7 @@ final class HPScientificEngine {
             var r = 1.0
             for k in 1...max(1, Int(n)) { r *= Double(k) }
             if n == 0 { r = 1 }
-            stack[0] = r; displayText = fmt(r); isTypingNumber = false
+            stack[0] = r; displayText = fmt(r); isTypingNumber = false; stackLiftEnabled = true
 
         // STATS — Σ+ accumulates (X=x, Y=y) pair
         case "Σ+":
@@ -223,7 +223,7 @@ final class HPScientificEngine {
             let x = stack[0], y = stack[1]
             statN += 1; statSumX += x; statSumY += y
             statSumX2 += x * x; statSumY2 += y * y; statSumXY += x * y
-            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false
+            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false; stackLiftEnabled = true
             appendTape(label: "Σ+", result: displayText)
 
         case "Σ-":
@@ -231,33 +231,33 @@ final class HPScientificEngine {
             let x = stack[0], y = stack[1]
             statN -= 1; statSumX -= x; statSumY -= y
             statSumX2 -= x * x; statSumY2 -= y * y; statSumXY -= x * y
-            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false
+            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false; stackLiftEnabled = true
 
         case "x̄":
             guard statN > 0 else { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
             stack[0] = statSumX / statN
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "ȳ":
             guard statN > 0 else { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
             stack[0] = statSumY / statN
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "s":
             guard statN > 1 else { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
             let variance = (statSumX2 - statSumX * statSumX / statN) / (statN - 1)
             stack[0] = sqrt(max(variance, 0))
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "sy":
             guard statN > 1 else { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
             let variance = (statSumY2 - statSumY * statSumY / statN) / (statN - 1)
             stack[0] = sqrt(max(variance, 0))
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "n":   // return sample count
             if isTypingNumber { commitTyping() }

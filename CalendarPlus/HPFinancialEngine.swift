@@ -104,7 +104,7 @@ final class HPFinancialEngine {
                 }
                 stack[0] = parseDisplay()
             } else {
-                stack[0] = -stack[0]; displayText = fmt(stack[0])
+                stack[0] = -stack[0]; displayText = fmt(stack[0]); stackLiftEnabled = true
             }
 
         case "CLX", "CLx":
@@ -113,14 +113,14 @@ final class HPFinancialEngine {
         case "x≷y":
             if isTypingNumber { commitTyping() }
             stack.swapAt(0, 1)
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "R↓":
             if isTypingNumber { commitTyping() }
             let t = stack[0]
             stack[0] = stack[1]; stack[1] = stack[2]
             stack[2] = stack[3]; stack[3] = t
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         // ARITHMETIC
         case "+":
@@ -137,7 +137,8 @@ final class HPFinancialEngine {
         case "1/x":
             if stack[0] == 0 { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
-            stack[0] = 1 / stack[0]; displayText = fmt(stack[0]); isTypingNumber = false
+            stack[0] = 1 / stack[0]; displayText = fmt(stack[0])
+            isTypingNumber = false; stackLiftEnabled = true
 
         // TVM — store X if typing, solve if not
         case "n":
@@ -266,37 +267,37 @@ final class HPFinancialEngine {
         case "%":
             if isTypingNumber { commitTyping() }
             stack[0] = stack[1] * stack[0] / 100.0
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "Δ%":
             if isTypingNumber { commitTyping() }
             guard stack[1] != 0 else { displayText = "Error"; return }
             stack[0] = (stack[0] - stack[1]) / abs(stack[1]) * 100.0
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         case "%T":
             if isTypingNumber { commitTyping() }
             guard stack[1] != 0 else { displayText = "Error"; return }
             stack[0] = stack[0] / stack[1] * 100.0
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         // STATS
         case "Σ+":
             if isTypingNumber { commitTyping() }
             statN += 1; statSumX += stack[0]; statSumX2 += stack[0] * stack[0]
-            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false
+            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false; stackLiftEnabled = true
             appendTape(label: "Σ+", result: displayText)
 
         case "Σ-":
             if isTypingNumber { commitTyping() }
             statN -= 1; statSumX -= stack[0]; statSumX2 -= stack[0] * stack[0]
-            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false
+            stack[0] = statN; displayText = fmt(statN); isTypingNumber = false; stackLiftEnabled = true
 
         case "x̄":
             guard statN > 0 else { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
             stack[0] = statSumX / statN
-            displayText = fmt(stack[0]); isTypingNumber = false
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
 
         // STO / RCL
         case "STO":
