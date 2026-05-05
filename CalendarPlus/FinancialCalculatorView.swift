@@ -210,7 +210,6 @@ struct FinancialCalculatorView: View {
     // MARK: - Key handling
 
     private func keyTapped(_ key: HPKey) {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         let label = key.main
 
         if label == "f" { shiftMode = shiftMode == .f ? .none : .f; return }

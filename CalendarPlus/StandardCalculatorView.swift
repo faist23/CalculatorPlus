@@ -157,8 +157,6 @@ struct StandardCalculatorView: View {
     }
 
     func buttonTapped(_ button: String) {
-        haptic()
-
         switch button {
         case "0"..."9", ".":
             handleDigit(button)
@@ -289,10 +287,6 @@ struct StandardCalculatorView: View {
         return f.string(from: NSNumber(value: n)) ?? "0"
     }
 
-    private func haptic() {
-        let g = UIImpactFeedbackGenerator(style: .light)
-        g.impactOccurred()
-    }
 }
 
 // MARK: - Design tokens
@@ -322,7 +316,7 @@ struct CalcButton: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 30, weight: .medium))
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(0.6)
                 .lineLimit(1)
                 .foregroundColor(fgColor)
                 .frame(maxWidth: .infinity, minHeight: height, maxHeight: height, alignment: alignment)
@@ -330,7 +324,20 @@ struct CalcButton: View {
                 .background(bgColor)
                 .clipShape(Capsule())
         }
+        .buttonStyle(CalcPressStyle())
         .accessibilityLabel(title)
         .frame(width: width, height: height)
+    }
+}
+
+private struct CalcPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .onChange(of: configuration.isPressed) { pressed in
+                if pressed { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
+            }
+            .scaleEffect(configuration.isPressed ? 0.93 : 1.0)
+            .brightness(configuration.isPressed ? -0.10 : 0)
+            .animation(.easeOut(duration: 0.07), value: configuration.isPressed)
     }
 }

@@ -119,6 +119,7 @@ struct HPButtonView: View {
             }
             .frame(width: width, height: height)
         }
+        .buttonStyle(HPPressStyle())
         .accessibilityLabel(isSettingsKey ? "Settings" : key.main)
     }
 
@@ -130,5 +131,18 @@ struct HPButtonView: View {
         else if len >= 3 { (scale, cap) = (0.32, 18) }
         else             { (scale, cap) = (0.40, 20) }
         return min(max(10.5, height * scale), cap)
+    }
+}
+
+// Fires medium haptic on finger-down and gives keys a physical press feel.
+struct HPPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .onChange(of: configuration.isPressed) { pressed in
+                if pressed { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
+            }
+            .scaleEffect(configuration.isPressed ? 0.91 : 1.0)
+            .brightness(configuration.isPressed ? -0.14 : 0)
+            .animation(.easeOut(duration: 0.07), value: configuration.isPressed)
     }
 }
