@@ -132,7 +132,13 @@ struct FinancialCalculatorView: View {
                 .frame(maxHeight: .infinity, alignment: .center)
             }
         }
-        .background(Color(red: 0.13, green: 0.13, blue: 0.13).ignoresSafeArea())
+        .background(
+            LinearGradient(
+                colors: [Color(red: 0.19, green: 0.18, blue: 0.16),
+                         Color(red: 0.10, green: 0.10, blue: 0.09)],
+                startPoint: .top, endPoint: .bottom
+            ).ignoresSafeArea()
+        )
         .confirmationDialog("Calculator Mode", isPresented: $showModeMenu, titleVisibility: .visible) {
             Button("Financial") {
                 useScientific = false
