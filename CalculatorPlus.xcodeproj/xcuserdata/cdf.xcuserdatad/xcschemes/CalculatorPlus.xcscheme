@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0E825E14609E63CE57481402DCF4A8FA"
-               BuildableName = "Pods_CalendarPlus.framework"
-               BlueprintName = "Pods-CalendarPlus"
+               BuildableName = "Pods_CalculatorPlus.framework"
+               BlueprintName = "Pods-CalculatorPlus"
                ReferencedContainer = "container:Pods/Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "76665AA61E512D9100442037"
-               BuildableName = "CalendarPlus.app"
-               BlueprintName = "CalendarPlus"
-               ReferencedContainer = "container:CalendarPlus.xcodeproj">
+               BuildableName = "CalculatorPlus.app"
+               BlueprintName = "CalculatorPlus"
+               ReferencedContainer = "container:CalculatorPlus.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "76665AA61E512D9100442037"
-            BuildableName = "CalendarPlus.app"
-            BlueprintName = "CalendarPlus"
-            ReferencedContainer = "container:CalendarPlus.xcodeproj">
+            BuildableName = "CalculatorPlus.app"
+            BlueprintName = "CalculatorPlus"
+            ReferencedContainer = "container:CalculatorPlus.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -68,9 +68,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "76665AA61E512D9100442037"
-            BuildableName = "CalendarPlus.app"
-            BlueprintName = "CalendarPlus"
-            ReferencedContainer = "container:CalendarPlus.xcodeproj">
+            BuildableName = "CalculatorPlus.app"
+            BlueprintName = "CalculatorPlus"
+            ReferencedContainer = "container:CalculatorPlus.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -85,9 +85,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "76665AA61E512D9100442037"
-            BuildableName = "CalendarPlus.app"
-            BlueprintName = "CalendarPlus"
-            ReferencedContainer = "container:CalendarPlus.xcodeproj">
+            BuildableName = "CalculatorPlus.app"
+            BlueprintName = "CalculatorPlus"
+            ReferencedContainer = "container:CalculatorPlus.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

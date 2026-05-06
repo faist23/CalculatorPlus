@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct CalendarPlusApp: App {
+struct CalculatorPlusApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()

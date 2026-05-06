@@ -13,7 +13,7 @@
 		AA00DD001E512D9100442037 /* HPScientificEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00DD011E512D9100442037 /* HPScientificEngine.swift */; };
 		AA00EE001E512D9100442037 /* TapeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00EE011E512D9100442037 /* TapeView.swift */; };
 		7640BB6D1E7C3D0D009886DE /* FinancialCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7640BB6C1E7C3D0D009886DE /* FinancialCalculatorView.swift */; };
-		76665AAB1E512D9100442037 /* CalendarPlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76665AAA1E512D9100442037 /* CalendarPlusApp.swift */; };
+		76665AAB1E512D9100442037 /* CalculatorPlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76665AAA1E512D9100442037 /* CalculatorPlusApp.swift */; };
 		76665AAD1E512D9100442037 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76665AAC1E512D9100442037 /* MainView.swift */; };
 		76665AB01E512D9100442037 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 76665AAE1E512D9100442037 /* Main.storyboard */; };
 		76665AB21E512D9100442037 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76665AB11E512D9100442037 /* Assets.xcassets */; };
@@ -51,13 +51,13 @@
 		76B38E9F1E9E9B9E00D6B2E5 /* ColorCalc_startup.png in Resources */ = {isa = PBXBuildFile; fileRef = 76B38E9E1E9E9B9E00D6B2E5 /* ColorCalc_startup.png */; };
 		76D19AFD1E513CCF00B21AA7 /* Settings-15.png in Resources */ = {isa = PBXBuildFile; fileRef = 76D19AFC1E513CCF00B21AA7 /* Settings-15.png */; };
 		A6CD10B16E1ABCDD42862541 /* ScientificCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1B0AC4CD64C58A630BCF2 /* ScientificCalculatorView.swift */; };
-		BB01FF001E512D9100442037 /* CalendarPlusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB01FF011E512D9100442037 /* CalendarPlusTests.swift */; };
+		BB01FF001E512D9100442037 /* CalculatorPlusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		7640BB6C1E7C3D0D009886DE /* FinancialCalculatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinancialCalculatorView.swift; sourceTree = "<group>"; };
-		76665AA71E512D9100442037 /* CalendarPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalendarPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		76665AAA1E512D9100442037 /* CalendarPlusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPlusApp.swift; sourceTree = "<group>"; };
+		76665AA71E512D9100442037 /* CalculatorPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalculatorPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		76665AAA1E512D9100442037 /* CalculatorPlusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPlusApp.swift; sourceTree = "<group>"; };
 		76665AAC1E512D9100442037 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		76665AAF1E512D9100442037 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		76665AB11E512D9100442037 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -101,8 +101,8 @@
 		AA00CC011E512D9100442037 /* HPFinancialEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HPFinancialEngine.swift; sourceTree = "<group>"; };
 		AA00DD011E512D9100442037 /* HPScientificEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HPScientificEngine.swift; sourceTree = "<group>"; };
 		AA00EE011E512D9100442037 /* TapeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TapeView.swift; sourceTree = "<group>"; };
-		BB01FF011E512D9100442037 /* CalendarPlusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPlusTests.swift; sourceTree = "<group>"; };
-		BB03FF061E512D9100442037 /* CalendarPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalendarPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPlusTests.swift; sourceTree = "<group>"; };
+		BB03FF061E512D9100442037 /* CalculatorPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculatorPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,7 +113,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB03FF021E512D9100442037 /* Frameworks (CalendarPlusTests) */ = {
+		BB03FF021E512D9100442037 /* Frameworks (CalculatorPlusTests) */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -126,8 +126,8 @@
 		76665A9E1E512D9100442037 = {
 			isa = PBXGroup;
 			children = (
-				76665AA91E512D9100442037 /* CalendarPlus */,
-				BB02FF001E512D9100442037 /* CalendarPlusTests */,
+				76665AA91E512D9100442037 /* CalculatorPlus */,
+				BB02FF001E512D9100442037 /* CalculatorPlusTests */,
 				76665AA81E512D9100442037 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -135,25 +135,25 @@
 		76665AA81E512D9100442037 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				76665AA71E512D9100442037 /* CalendarPlus.app */,
-				BB03FF061E512D9100442037 /* CalendarPlusTests.xctest */,
+				76665AA71E512D9100442037 /* CalculatorPlus.app */,
+				BB03FF061E512D9100442037 /* CalculatorPlusTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BB02FF001E512D9100442037 /* CalendarPlusTests */ = {
+		BB02FF001E512D9100442037 /* CalculatorPlusTests */ = {
 			isa = PBXGroup;
 			children = (
-				BB01FF011E512D9100442037 /* CalendarPlusTests.swift */,
+				BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */,
 			);
-			path = CalendarPlusTests;
+			path = CalculatorPlusTests;
 			sourceTree = "<group>";
 		};
-		76665AA91E512D9100442037 /* CalendarPlus */ = {
+		76665AA91E512D9100442037 /* CalculatorPlus */ = {
 			isa = PBXGroup;
 			children = (
 				76BDBC631E9C029900CF2785 /* resources */,
-				76665AAA1E512D9100442037 /* CalendarPlusApp.swift */,
+				76665AAA1E512D9100442037 /* CalculatorPlusApp.swift */,
 				76665AAC1E512D9100442037 /* MainView.swift */,
 				7640BB6C1E7C3D0D009886DE /* FinancialCalculatorView.swift */,
 				76665AAE1E512D9100442037 /* Main.storyboard */,
@@ -169,7 +169,7 @@
 				AA00DD011E512D9100442037 /* HPScientificEngine.swift */,
 				AA00EE011E512D9100442037 /* TapeView.swift */,
 			);
-			path = CalendarPlus;
+			path = CalculatorPlus;
 			sourceTree = "<group>";
 		};
 		76BDBC631E9C029900CF2785 /* resources */ = {
@@ -212,9 +212,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		76665AA61E512D9100442037 /* CalendarPlus */ = {
+		76665AA61E512D9100442037 /* CalculatorPlus */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 76665AB91E512D9100442037 /* Build configuration list for PBXNativeTarget "CalendarPlus" */;
+			buildConfigurationList = 76665AB91E512D9100442037 /* Build configuration list for PBXNativeTarget "CalculatorPlus" */;
 			buildPhases = (
 				76665AA31E512D9100442037 /* Sources */,
 				76665AA41E512D9100442037 /* Frameworks */,
@@ -224,14 +224,14 @@
 			);
 			dependencies = (
 			);
-			name = CalendarPlus;
+			name = CalculatorPlus;
 			productName = ColorCalc;
-			productReference = 76665AA71E512D9100442037 /* CalendarPlus.app */;
+			productReference = 76665AA71E512D9100442037 /* CalculatorPlus.app */;
 			productType = "com.apple.product-type.application";
 		};
-		BB03FF001E512D9100442037 /* CalendarPlusTests */ = {
+		BB03FF001E512D9100442037 /* CalculatorPlusTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB03FF051E512D9100442037 /* Build configuration list for PBXNativeTarget "CalendarPlusTests" */;
+			buildConfigurationList = BB03FF051E512D9100442037 /* Build configuration list for PBXNativeTarget "CalculatorPlusTests" */;
 			buildPhases = (
 				BB03FF011E512D9100442037 /* Sources */,
 				BB03FF021E512D9100442037 /* Frameworks */,
@@ -240,9 +240,9 @@
 			);
 			dependencies = (
 			);
-			name = CalendarPlusTests;
-			productName = CalendarPlusTests;
-			productReference = BB03FF061E512D9100442037 /* CalendarPlusTests.xctest */;
+			name = CalculatorPlusTests;
+			productName = CalculatorPlusTests;
+			productReference = BB03FF061E512D9100442037 /* CalculatorPlusTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -267,7 +267,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 76665AA21E512D9100442037 /* Build configuration list for PBXProject "CalendarPlus" */;
+			buildConfigurationList = 76665AA21E512D9100442037 /* Build configuration list for PBXProject "CalculatorPlus" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -280,8 +280,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				76665AA61E512D9100442037 /* CalendarPlus */,
-				BB03FF001E512D9100442037 /* CalendarPlusTests */,
+				76665AA61E512D9100442037 /* CalculatorPlus */,
+				BB03FF001E512D9100442037 /* CalculatorPlusTests */,
 			);
 		};
 /* End PBXProject section */
@@ -337,7 +337,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				76665AAD1E512D9100442037 /* MainView.swift in Sources */,
-				76665AAB1E512D9100442037 /* CalendarPlusApp.swift in Sources */,
+				76665AAB1E512D9100442037 /* CalculatorPlusApp.swift in Sources */,
 				7640BB6D1E7C3D0D009886DE /* FinancialCalculatorView.swift in Sources */,
 				040CF18AA4101C200CA73664 /* StandardCalculatorView.swift in Sources */,
 				A6CD10B16E1ABCDD42862541 /* ScientificCalculatorView.swift in Sources */,
@@ -348,11 +348,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB03FF011E512D9100442037 /* Sources (CalendarPlusTests) */ = {
+		BB03FF011E512D9100442037 /* Sources (CalculatorPlusTests) */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB01FF001E512D9100442037 /* CalendarPlusTests.swift in Sources */,
+				BB01FF001E512D9100442037 /* CalculatorPlusTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,7 +500,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				INFOPLIST_FILE = CalendarPlus/Info.plist;
+				INFOPLIST_FILE = CalculatorPlus/Info.plist;
 				GENERATE_INFOPLIST = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -509,7 +509,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalendarPlus;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalculatorPlus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -520,7 +520,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				INFOPLIST_FILE = CalendarPlus/Info.plist;
+				INFOPLIST_FILE = CalculatorPlus/Info.plist;
 				GENERATE_INFOPLIST = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -529,7 +529,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalendarPlus;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalculatorPlus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -542,11 +542,11 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = DT58WA8N32;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalendarPlusTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalculatorPlusTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalendarPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalendarPlus";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalculatorPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalculatorPlus";
 			};
 			name = Debug;
 		};
@@ -556,18 +556,18 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = DT58WA8N32;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalendarPlusTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalculatorPlusTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalendarPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalendarPlus";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalculatorPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalculatorPlus";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		76665AA21E512D9100442037 /* Build configuration list for PBXProject "CalendarPlus" */ = {
+		76665AA21E512D9100442037 /* Build configuration list for PBXProject "CalculatorPlus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				76665AB71E512D9100442037 /* Debug */,
@@ -576,7 +576,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		76665AB91E512D9100442037 /* Build configuration list for PBXNativeTarget "CalendarPlus" */ = {
+		76665AB91E512D9100442037 /* Build configuration list for PBXNativeTarget "CalculatorPlus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				76665ABA1E512D9100442037 /* Debug */,
@@ -585,7 +585,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB03FF051E512D9100442037 /* Build configuration list for PBXNativeTarget "CalendarPlusTests" */ = {
+		BB03FF051E512D9100442037 /* Build configuration list for PBXNativeTarget "CalculatorPlusTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB03FF031E512D9100442037 /* Debug */,

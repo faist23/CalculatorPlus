@@ -1,5 +1,5 @@
 import XCTest
-@testable import CalendarPlus
+@testable import CalculatorPlus
 
 final class HPFinancialEngineTests: XCTestCase {
 
