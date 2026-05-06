@@ -170,9 +170,9 @@ final class HPScientificEngine {
             unary { Foundation.trunc($0) }
 
         // TRIG
-        case "SIN":    unary { sin(toRad($0)) }
-        case "COS":    unary { cos(toRad($0)) }
-        case "TAN":    unary { tan(toRad($0)) }
+        case "SIN":    unary { snapTrig(sin(toRad($0))) }
+        case "COS":    unary { snapTrig(cos(toRad($0))) }
+        case "TAN":    unary { snapTrig(tan(toRad($0))) }
         case "SIN⁻¹":
             if abs(stack[0]) > 1 { displayText = "Error"; return }
             unary { fromRad(asin($0)) }
@@ -357,6 +357,12 @@ final class HPScientificEngine {
 
     private func fromRad(_ v: Double) -> Double {
         angleMode == .deg ? v * 180.0 / .pi : v
+    }
+
+    // Snap floating-point trig results that should be exact integers to their true values.
+    private func snapTrig(_ v: Double) -> Double {
+        let rounded = v.rounded()
+        return abs(v - rounded) < 1e-10 ? rounded : v
     }
 
     // MARK: - Tape recall
