@@ -19,6 +19,8 @@ struct HPKey {
     }
 }
 
+// MARK: - Button view
+
 struct HPButtonView: View {
     let key: HPKey
     let width: CGFloat
@@ -34,117 +36,244 @@ struct HPButtonView: View {
     private var isVertical: Bool { height > width * 1.4 }
 
     private var bodyColor: Color {
-        if isF { return Color(red: 0.82, green: 0.42, blue: 0.05) }
-        if isG { return Color(red: 0.22, green: 0.42, blue: 0.82) }
-        if isEnter { return Color(red: 0.22, green: 0.28, blue: 0.38) }
+        if isF     { return HPDesign.keyF }
+        if isG     { return HPDesign.keyG }
+        if isEnter { return HPDesign.keyEnter }
         let digits = Set("0123456789.")
         if key.main.count == 1, let ch = key.main.first, digits.contains(ch) {
-            return Color(red: 0.30, green: 0.30, blue: 0.30)
+            return HPDesign.keyDigit
         }
-        return Color(red: 0.17, green: 0.17, blue: 0.17)
+        return HPDesign.keyDark
     }
 
-    private let fColor = Color(red: 0.9, green: 0.6, blue: 0.1)
-    private let gColor = Color(red: 0.45, green: 0.65, blue: 1.0)
+    // ENTER key body: top face with stacked letters + darker slanted bottom with g-label
+    @ViewBuilder
+    private var enterKeyBody: some View {
+        let letterSize = max(11, height * 0.14)
+        let letters: [String] = ["E", "N", "T", "E", "R"]
+        let slopeH = height * 0.26
+        VStack(spacing: 0) {
+            // Top face: gradient sheen + stacked ENTER letters
+            ZStack {
+                LinearGradient(
+                    colors: [Color.white.opacity(0.22), Color.clear],
+                    startPoint: .top, endPoint: .bottom
+                )
+                VStack(spacing: 0) {
+                    Spacer()
+                    ForEach(letters.indices, id: \.self) { i in
+                        Text(letters[i])
+                            .font(.system(size: letterSize, weight: .bold))
+                            .foregroundColor(HPDesign.mainWhite)
+                    }
+                    Spacer()
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: height - slopeH)
+
+            // Slanted bottom face: darker + g-label
+            ZStack {
+                Color.black.opacity(0.28)
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.20))
+                        .frame(height: 0.75)
+                    Spacer()
+                }
+                if !key.gShift.isEmpty {
+                    Text(key.gShift)
+                        .font(HPDesign.gFont(height: height * 0.5))
+                        .foregroundColor(HPDesign.gLabelBlue)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: slopeH)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 3))
+    }
 
     var body: some View {
         Button(action: isSettingsKey ? (onSettings ?? action) : action) {
             ZStack {
+                // Keycap base fill + shadow
                 RoundedRectangle(cornerRadius: 3)
                     .fill(bodyColor)
-                    // top-edge highlight gives keys a raised, physical look
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(LinearGradient(
-                                colors: [Color.white.opacity(0.20), Color.clear],
-                                startPoint: .top,
-                                endPoint: UnitPoint(x: 0.5, y: 0.55)
-                            ))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 3)
-                            .stroke(Color.white.opacity(0.14), lineWidth: 0.5)
-                    )
-                    .shadow(color: .black.opacity(0.50), radius: 2, x: 0, y: 1.5)
+                    .shadow(color: .black.opacity(0.55), radius: 2.5, x: 0, y: 2)
 
                 if isSettingsKey {
+                    // Gradient sheen over settings key
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.22), Color.clear],
+                        startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.5)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
                     Image(systemName: "gear")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.white)
-                } else if isVertical {
-                    // Vertical ENTER text
-                    VStack(spacing: 0) {
-                        ForEach(Array("ENTER".enumerated()), id: \.offset) { _, ch in
-                            Text(String(ch))
-                                .font(.system(size: max(11, height * 0.16), weight: .bold))
-                                .foregroundColor(.white)
-                        }
-                    }
-                } else {
-                    let shiftH    = max(9.0, height * 0.17)
-                    let shiftFont = max(7.0, height * 0.12)
-                    VStack(spacing: 1) {
-                        // f-shift label (gold, above key)
-                        Group {
-                            if !key.fShift.isEmpty {
-                                Text(key.fShift)
-                                    .foregroundColor(fColor)
-                                    .opacity(shiftMode == .f ? 1 : 0.5)
-                            } else {
-                                Color.clear
-                            }
-                        }
-                        .font(.system(size: shiftFont, weight: .semibold))
-                        .lineLimit(1).minimumScaleFactor(0.7)
-                        .frame(height: shiftH)
 
-                        // Main label
-                        if isF || isG {
+                } else if isVertical {
+                    // Tall ENTER key: split face handled inside enterKeyBody
+                    enterKeyBody
+
+                } else if isF || isG {
+                    // f / g shift keys: gradient sheen + dominant label
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.22), Color.clear],
+                        startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.5)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
+                    Text(key.main)
+                        .font(.system(size: max(14, height * 0.32), weight: .black))
+                        .foregroundColor(HPDesign.mainWhite)
+
+                } else {
+                    // Standard key: top face (lighter) + slanted lower face (darker) with g-label
+                    VStack(spacing: 0) {
+                        // Top face — gradient sheen + main label centered
+                        ZStack {
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.22), Color.clear],
+                                startPoint: .top, endPoint: .bottom
+                            )
                             Text(key.main)
-                                .font(.system(size: max(13, height * 0.22), weight: .black))
-                                .foregroundColor(.white)
-                        } else {
-                            Text(key.main)
-                                .font(.system(size: mainFontSize, weight: .bold))
-                                .lineLimit(1).minimumScaleFactor(0.65)
-                                .foregroundColor(.white)
+                                .font(HPDesign.mainFont(height: height * 0.64, charCount: key.main.count))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.65)
+                                .foregroundColor(HPDesign.mainWhite)
                                 .frame(maxWidth: .infinity)
                         }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: height * 0.64)
 
-                        // g-shift label (blue, below key)
-                        Group {
+                        // Slanted lower face — darker + g-label
+                        ZStack {
+                            Color.black.opacity(0.28)
+                            // Thin highlight line at the face/slope step
+                            VStack(spacing: 0) {
+                                Rectangle()
+                                    .fill(Color.white.opacity(0.20))
+                                    .frame(height: 0.75)
+                                Spacer()
+                            }
                             if !key.gShift.isEmpty {
                                 Text(key.gShift)
-                                    .foregroundColor(gColor)
-                                    .opacity(shiftMode == .g ? 1 : 0.5)
-                            } else {
-                                Color.clear
+                                    .font(HPDesign.gFont(height: height))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                    .foregroundColor(HPDesign.gLabelBlue)
                             }
                         }
-                        .font(.system(size: shiftFont, weight: .semibold))
-                        .lineLimit(1).minimumScaleFactor(0.7)
-                        .frame(height: shiftH)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: height * 0.36)
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
                 }
+
+                // Border drawn last (on top of all content)
+                RoundedRectangle(cornerRadius: 3)
+                    .stroke(Color.white.opacity(0.14), lineWidth: 0.5)
             }
             .frame(width: width, height: height)
         }
         .buttonStyle(HPPressStyle())
         .accessibilityLabel(isSettingsKey ? "Settings" : key.main)
-    }
-
-    private var mainFontSize: CGFloat {
-        let len = key.main.count
-        let (scale, cap): (CGFloat, CGFloat)
-        if len >= 5      { (scale, cap) = (0.24, 16) }
-        else if len >= 4 { (scale, cap) = (0.28, 17) }
-        else if len >= 3 { (scale, cap) = (0.32, 18) }
-        else             { (scale, cap) = (0.40, 20) }
-        return min(max(10.5, height * scale), cap)
+        .accessibilityHint([key.fShift, key.gShift].filter { !$0.isEmpty }.joined(separator: ", "))
     }
 }
 
-// Fires medium haptic on finger-down and gives keys a physical press feel.
+// MARK: - Faceplate f-shift label row
+
+/// Renders the gold f-shift labels on the calculator faceplate above a key row.
+/// Each label is aligned to its corresponding key using the same width and gap.
+struct FaceplateRow: View {
+    let keys: [HPKey]
+    let keyWidth: CGFloat
+    let keyHeight: CGFloat
+    let gap: CGFloat
+
+    var body: some View {
+        HStack(spacing: gap) {
+            ForEach(keys.indices, id: \.self) { i in
+                Group {
+                    if !keys[i].fShift.isEmpty {
+                        Text(keys[i].fShift)
+                            .foregroundColor(HPDesign.faceplateGold)
+                    } else {
+                        Color.clear
+                    }
+                }
+                .font(HPDesign.fFont(keyHeight: keyHeight))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(width: keyWidth)
+            }
+        }
+    }
+}
+
+// MARK: - Faceplate group header (Bond / Depreciation / Clear)
+
+/// A labeled bracket spanning a range of keys on the faceplate.
+struct FaceplateGroup {
+    let label: String
+    /// Key indices this group spans (inclusive).
+    let startIndex: Int
+    let endIndex: Int
+}
+
+/// Renders one or more FaceplateGroup labels with bracket lines above a key row.
+struct FaceplateGroupHeader: View {
+    let groups: [FaceplateGroup]
+    let keyWidth: CGFloat
+    let gap: CGFloat
+    let totalKeys: Int
+
+    var body: some View {
+        GeometryReader { geo in
+            let leftEdge: CGFloat = 0
+            Canvas { ctx, size in
+                for group in groups {
+                    let x0 = xCenter(group.startIndex) - keyWidth / 2
+                    let x1 = xCenter(group.endIndex)   + keyWidth / 2
+                    let midX = (x0 + x1) / 2
+                    let lineY: CGFloat = size.height * 0.72
+
+                    var path = Path()
+                    path.move(to: CGPoint(x: x0, y: lineY))
+                    path.addLine(to: CGPoint(x: x1, y: lineY))
+                    ctx.stroke(path, with: .color(HPDesign.groupBracketGold), lineWidth: 0.8)
+
+                    // Tick marks down from line ends
+                    for x in [x0, x1] {
+                        var tick = Path()
+                        tick.move(to: CGPoint(x: x, y: lineY))
+                        tick.addLine(to: CGPoint(x: x, y: lineY + 3))
+                        ctx.stroke(tick, with: .color(HPDesign.groupBracketGold), lineWidth: 0.8)
+                    }
+
+                    // Label above the line
+                    let labelStr = AttributedString(group.label)
+                    ctx.draw(
+                        Text(group.label)
+                            .font(HPDesign.groupHeaderFont)
+                            .foregroundColor(HPDesign.groupHeaderGold),
+                        at: CGPoint(x: midX, y: size.height * 0.18),
+                        anchor: .top
+                    )
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func xCenter(_ index: Int) -> CGFloat {
+        CGFloat(index) * (keyWidth + gap) + keyWidth / 2
+    }
+}
+
+// MARK: - Press style
+
 struct HPPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

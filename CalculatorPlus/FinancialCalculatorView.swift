@@ -86,9 +86,9 @@ struct FinancialCalculatorView: View {
                     FaceplateGroup(label: "BOND",        startIndex: 0, endIndex: 1),
                     FaceplateGroup(label: "DEPRECIATION", startIndex: 2, endIndex: 4),
                 ]
-                // Clear group for row 3 left (indices into a 5-key row; excludes R/S at index 0)
+                // Clear group spans SST through ENTER/PREFIX in full 10-key row (indices 1–5)
                 let clearGroups = [
-                    FaceplateGroup(label: "CLEAR", startIndex: 1, endIndex: 4),
+                    FaceplateGroup(label: "CLEAR", startIndex: 1, endIndex: 5),
                 ]
 
                 VStack(spacing: vGap) {
@@ -117,14 +117,15 @@ struct FinancialCalculatorView: View {
                         }
                     }.padding(.horizontal, hPad)
 
+                    // CLEAR bracket — full width, spans SST through ENTER/PREFIX (10-key indices 1–5)
+                    FaceplateGroupHeader(groups: clearGroups,
+                                        keyWidth: btnW, gap: hGap, totalKeys: 10)
+                        .frame(height: groupH).padding(.horizontal, hPad)
+
                     // Rows 3 & 4 (split layout)
                     HStack(alignment: .top, spacing: 0) {
                         // Left block (5 cols)
                         VStack(spacing: vGap) {
-                            // CLEAR bracket — above row 3 faceplate labels
-                            FaceplateGroupHeader(groups: clearGroups,
-                                                 keyWidth: btnW, gap: hGap, totalKeys: row3Left.count)
-                                .frame(height: groupH)
                             FaceplateRow(keys: row3Left, keyWidth: btnW, keyHeight: btnH, gap: hGap)
                                 .frame(height: fRowH)
                             HStack(spacing: hGap) {
@@ -149,8 +150,6 @@ struct FinancialCalculatorView: View {
 
                         // ENTER key (tall, 1 col wide) with its faceplate label
                         VStack(spacing: 0) {
-                            // Offset matches CLEAR bracket + vGap so PREFIX aligns with row3 faceplate labels
-                            Color.clear.frame(height: groupH + vGap)
                             Text(enterKey.fShift.isEmpty ? " " : enterKey.fShift)
                                 .font(HPDesign.fFont(keyHeight: btnH))
                                 .foregroundColor(HPDesign.faceplateGold)
@@ -163,8 +162,6 @@ struct FinancialCalculatorView: View {
 
                         // Right block (4 cols)
                         VStack(spacing: vGap) {
-                            // Offset matches CLEAR bracket so row3Right faceplate aligns with row3Left
-                            Color.clear.frame(height: groupH)
                             FaceplateRow(keys: row3Right, keyWidth: btnW, keyHeight: btnH, gap: hGap)
                                 .frame(height: fRowH)
                             HStack(spacing: hGap) {
