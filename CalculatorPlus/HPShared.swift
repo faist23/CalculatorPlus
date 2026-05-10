@@ -49,9 +49,11 @@ struct HPButtonView: View {
     // ENTER key body: top face with stacked letters + darker slanted bottom with g-label
     @ViewBuilder
     private var enterKeyBody: some View {
-        let letterSize = max(11, height * 0.14)
-        let letters: [String] = ["E", "N", "T", "E", "R"]
         let slopeH = height * 0.26
+        let topH = height - slopeH
+        // Size to fit 5 letters in 80% of topH; line height ≈ 1.2× font size
+        let letterSize = max(9, topH * 0.80 / 5 / 1.2)
+        let letters: [String] = ["E", "N", "T", "E", "R"]
         VStack(spacing: 0) {
             // Top face: gradient sheen + stacked ENTER letters
             ZStack {
