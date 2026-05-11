@@ -7,7 +7,6 @@ struct FinancialCalculatorView: View {
     let engine: HPFinancialEngine
 
     @State private var shiftMode: HPShiftMode = .none
-    @State private var showModeMenu = false
 
     // Rows 1 & 2: full 10-key rows
     let row1: [HPKey] = [
@@ -44,7 +43,7 @@ struct FinancialCalculatorView: View {
         HPKey("CLx",  f: "REG",   g: "x=0"),
     ]
     let row4Left: [HPKey] = [
-        HPKey("⚙",   f: "",      g: ""),
+        HPKey("SCI", f: "",      g: ""),
         HPKey("f",   f: "",      g: ""),
         HPKey("g",   f: "",      g: ""),
         HPKey("STO", f: "",      g: ""),
@@ -138,11 +137,8 @@ struct FinancialCalculatorView: View {
                                 .frame(height: fRowH)
                             HStack(spacing: hGap) {
                                 ForEach(row4Left.indices, id: \.self) { i in
-                                    let key = row4Left[i]
-                                    HPButtonView(key: key, width: btnW, height: btnH,
-                                                 shiftMode: shiftMode,
-                                                 isSettingsKey: key.main == "⚙",
-                                                 onSettings: { showModeMenu = true }) { keyTapped(key) }
+                                    HPButtonView(key: row4Left[i], width: btnW, height: btnH,
+                                                 shiftMode: shiftMode) { keyTapped(row4Left[i]) }
                                 }
                             }
                         }
@@ -193,17 +189,6 @@ struct FinancialCalculatorView: View {
                 startPoint: .top, endPoint: .bottom
             ).ignoresSafeArea()
         )
-        .confirmationDialog("Calculator Mode", isPresented: $showModeMenu, titleVisibility: .visible) {
-            Button("Switch to Scientific") {
-                useScientific = true
-                UserDefaults.standard.set(true, forKey: "hpUseScientific")
-            }
-            Button("FIX 0") { engine.displayDecimalPlaces = 0; engine.displayText = engine.fmt(engine.stack[0]) }
-            Button("FIX 2") { engine.displayDecimalPlaces = 2; engine.displayText = engine.fmt(engine.stack[0]) }
-            Button("FIX 4") { engine.displayDecimalPlaces = 4; engine.displayText = engine.fmt(engine.stack[0]) }
-            Button("FIX 6") { engine.displayDecimalPlaces = 6; engine.displayText = engine.fmt(engine.stack[0]) }
-            Button("Cancel", role: .cancel) {}
-        }
     }
 
     // MARK: - LCD
@@ -231,16 +216,7 @@ struct FinancialCalculatorView: View {
                             .foregroundColor(.black.opacity(0.65))
                             .padding(.leading, 4)
                     }
-                    Text("FIX \(engine.displayDecimalPlaces)")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.black.opacity(0.45))
-                        .padding(.leading, 6)
                     Spacer()
-                    Button { showModeMenu = true } label: {
-                        Image(systemName: "gear")
-                            .font(.system(size: 13))
-                            .foregroundColor(.black.opacity(0.45))
-                    }
                 }
                 .padding(.horizontal, 8)
                 .padding(.top, 5)
@@ -294,7 +270,15 @@ struct FinancialCalculatorView: View {
 
         if label == "f" { shiftMode = shiftMode == .f ? .none : .f; return }
         if label == "g" { shiftMode = shiftMode == .g ? .none : .g; return }
-        if label == "⚙" { showModeMenu = true; return }
+        if label == "SCI" { useScientific = true; UserDefaults.standard.set(true, forKey: "hpUseScientific"); return }
+
+        // f + digit 0-9 → FIX n (HP-12C authentic behaviour)
+        if shiftMode == .f, label.count == 1, let n = Int(label) {
+            engine.displayDecimalPlaces = n
+            engine.displayText = engine.fmt(engine.stack[0])
+            shiftMode = .none
+            return
+        }
 
         let effective: String
         switch shiftMode {
