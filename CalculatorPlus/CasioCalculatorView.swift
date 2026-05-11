@@ -68,6 +68,52 @@ struct CasioCalculatorView: View {
         CKey("0"), CKey("."), CKey("×10ˣ", s: "Rnd"), CKey("Σ+", s: "Σ−"), CKey("="),
     ]
 
+    // MARK: Mode-specific function rows (rows 1-4)
+
+    private var cmplxFnRows: [[CKey]] { [
+        [CKey("i"), CKey("Re"), CKey("Im"), CKey("|z|"), CKey("Arg")],
+        [CKey("Conj"), CKey("+"), CKey("-"), CKey("×"), CKey("÷")],
+        [CKey("sin", s:"sin⁻¹"), CKey("cos", s:"cos⁻¹"), CKey("tan", s:"tan⁻¹"),
+         CKey("log", s:"10^x"), CKey("ln", s:"e^x")],
+        [CKey("STO"), CKey("RCL"), CKey("Ans"), CKey("π"), CKey("M+")],
+    ] }
+
+    private var matFnRows: [[CKey]] { [
+        [CKey("MatA",s:""), CKey("MatB",s:""), CKey("MatC",s:""), CKey("Det",s:""), CKey("Trn",s:"")],
+        [CKey("Inv",s:""),  CKey("+",s:""),    CKey("-",s:""),    CKey("×",s:""),   CKey("=",s:"")],
+        [CKey("A",s:""),    CKey("B",s:""),    CKey("C",s:""),    CKey("(-)"),       CKey("DEL",s:"")],
+        [CKey("STO"),       CKey("RCL"),       CKey("Ans"),       CKey("π"),        CKey("M+")],
+    ] }
+
+    private var vctFnRows: [[CKey]] { [
+        [CKey("VctA",s:""), CKey("VctB",s:""), CKey("·",s:"Dot"), CKey("×",s:"Cross"), CKey("|v|",s:"")],
+        [CKey("+",s:""),    CKey("-",s:""),    CKey("Ang",s:""),  CKey("A",s:""),       CKey("B",s:"")],
+        [CKey("sin",s:"sin⁻¹"),CKey("cos",s:"cos⁻¹"),CKey("tan",s:"tan⁻¹"),
+         CKey("log",s:"10^x"),CKey("ln",s:"e^x")],
+        [CKey("STO"),       CKey("RCL"),       CKey("Ans"),       CKey("π"),           CKey("M+")],
+    ] }
+
+    private var tableFnRows: [[CKey]] { [
+        [CKey("sin",s:"sin⁻¹"),CKey("cos",s:"cos⁻¹"),CKey("tan",s:"tan⁻¹"),
+         CKey("log",s:"10^x"),CKey("ln",s:"e^x")],
+        [CKey("x²",s:"x³"),   CKey("√",s:"³√"),      CKey("^",s:"1/x"),
+         CKey("(",s:"Abs"),   CKey(")",s:"Frac")],
+        [CKey("↑",s:"UP"),    CKey("↓",s:"DOWN"),    CKey("π",s:"e"),
+         CKey("x",s:""),      CKey("Ans",s:"")],
+        [CKey("STO"),          CKey("RCL"),            CKey("(-)"),
+         CKey("DEL"),          CKey("=")],
+    ] }
+
+    private var activeFnRows: [[CKey]] {
+        switch engine.mode {
+        case .cmplx:  return cmplxFnRows
+        case .matrix: return matFnRows
+        case .vector: return vctFnRows
+        case .table:  return tableFnRows
+        default:      return [row1, row2, row3, row4]
+        }
+    }
+
     var body: some View {
         VStack(spacing: 5) {
             lcdDisplay
@@ -78,23 +124,24 @@ struct CasioCalculatorView: View {
                 let vGap: CGFloat = 2
                 let cols: CGFloat = 5
                 let btnW   = (geo.size.width - hPad * 2 - hGap * (cols - 1)) / cols
-                let modH   = max(18, min(26, geo.size.height * 0.065))
+                let modH   = max(16, min(24, geo.size.height * 0.065))
                 let availH = geo.size.height - modH - vGap * 9
-                let btnH   = min(availH / 8, 44)
+                let btnH   = availH / 8
+
+                let fn = activeFnRows
 
                 VStack(spacing: vGap) {
-                    keyRow(modRow, w: btnW, h: modH)
-                    keyRow(row1,   w: btnW, h: btnH)
-                    keyRow(row2,   w: btnW, h: btnH)
-                    keyRow(row3,   w: btnW, h: btnH)
-                    keyRow(row4,   w: btnW, h: btnH)
-                    keyRow(row5,   w: btnW, h: btnH)
-                    keyRow(row6,   w: btnW, h: btnH)
-                    keyRow(row7,   w: btnW, h: btnH)
-                    keyRow(row8,   w: btnW, h: btnH)
+                    keyRow(modRow,  w: btnW, h: modH)
+                    keyRow(fn[0],   w: btnW, h: btnH)
+                    keyRow(fn[1],   w: btnW, h: btnH)
+                    keyRow(fn[2],   w: btnW, h: btnH)
+                    keyRow(fn[3],   w: btnW, h: btnH)
+                    keyRow(row5,    w: btnW, h: btnH)
+                    keyRow(row6,    w: btnW, h: btnH)
+                    keyRow(row7,    w: btnW, h: btnH)
+                    keyRow(row8,    w: btnW, h: btnH)
                 }
                 .padding(.horizontal, hPad)
-                .frame(maxHeight: .infinity, alignment: .center)
             }
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: 0.5).onEnded { _ in showCalcPicker = true }
@@ -189,13 +236,14 @@ struct CasioCalculatorView: View {
                 }
                 .padding(.horizontal, 8).frame(height: 20)
 
-                // Result line
+                // Result line — smaller font for long mode-specific strings
+                let isBig = engine.displayText.count <= 12
                 HStack {
                     Spacer()
                     Text(engine.displayText)
-                        .font(.custom("Courier", size: 34))
+                        .font(.custom("Courier", size: isBig ? 34 : 18))
                         .foregroundColor(.black.opacity(0.85))
-                        .lineLimit(1).minimumScaleFactor(0.38)
+                        .lineLimit(2).minimumScaleFactor(0.35)
                 }
                 .padding(.horizontal, 8).padding(.bottom, 4).frame(height: 42)
             }

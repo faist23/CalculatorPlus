@@ -8,17 +8,18 @@ struct MainView: View {
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
             Group {
-                if router.active == .casio {
-                    CasioCalculatorView(active: $r.active, engine: router.casio)
-                        .transition(.opacity)
-                } else if isLandscape {
-                    if router.active == .hp15c {
-                        ScientificCalculatorView(active: $r.active, engine: router.hp15c)
-                            .transition(.opacity)
-                    } else {
+                if isLandscape {
+                    // Casio is portrait-only; fall back to hp15c when landscape and Casio is active
+                    if router.active == .hp12c {
                         FinancialCalculatorView(active: $r.active, engine: router.hp12c)
                             .transition(.opacity)
+                    } else {
+                        ScientificCalculatorView(active: $r.active, engine: router.hp15c)
+                            .transition(.opacity)
                     }
+                } else if router.active == .casio {
+                    CasioCalculatorView(active: $r.active, engine: router.casio)
+                        .transition(.opacity)
                 } else {
                     StandardCalculatorView()
                         .transition(.opacity)

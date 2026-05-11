@@ -54,6 +54,40 @@ enum DisplayFmt: Equatable {
 
 struct StatPoint: Identifiable { var id = UUID(); var x: Double; var y: Double = 0; var freq: Double = 1 }
 
+// MARK: - CMPLX types
+
+struct CasioComplex: Equatable {
+    var re: Double = 0; var im: Double = 0
+    static func +(a: Self, b: Self) -> Self { Self(re: a.re+b.re, im: a.im+b.im) }
+    static func -(a: Self, b: Self) -> Self { Self(re: a.re-b.re, im: a.im-b.im) }
+    static func *(a: Self, b: Self) -> Self { Self(re: a.re*b.re - a.im*b.im, im: a.re*b.im + a.im*b.re) }
+    static func /(a: Self, b: Self) -> Self {
+        let d = b.re*b.re + b.im*b.im
+        return Self(re: (a.re*b.re + a.im*b.im)/d, im: (a.im*b.re - a.re*b.im)/d)
+    }
+    var magnitude: Double { (re*re + im*im).squareRoot() }
+    var argument:  Double { atan2(im, re) }
+    var conjugate: Self   { Self(re: re, im: -im) }
+}
+
+// MARK: - MATRIX / VECTOR / TABLE types
+
+struct CasioMatrix: Equatable {
+    var rows: Int; var cols: Int; var data: [[Double]]
+    init(rows: Int = 2, cols: Int = 2) {
+        self.rows = rows; self.cols = cols
+        data = Array(repeating: Array(repeating: 0.0, count: cols), count: rows)
+    }
+    subscript(r: Int, c: Int) -> Double {
+        get { data[r][c] }
+        set { data[r][c] = newValue }
+    }
+}
+
+enum CasioMatPhase { case select, dimR, dimC, fill, ops, rhs, result }
+enum CasioVctPhase { case select, dim, fill, ops, rhs, result }
+enum CasioTablePhase { case expr, start, end, step, view }
+
 // MARK: - CasioEngine
 
 @Observable
@@ -74,7 +108,16 @@ final class CasioEngine: CalculatorEngine {
 
     // MARK: Mode
     var mode: CasioMode = .comp {
-        didSet { modeLabel = mode.title; clearInput() }
+        didSet {
+            modeLabel = mode.title; clearInput()
+            switch mode {
+            case .cmplx:  resetCmplx()
+            case .matrix: resetMatrix()
+            case .vector: resetVector()
+            case .table:  resetTable()
+            default: break
+            }
+        }
     }
     var angleUnit: AngleUnit = .deg { didSet { angleLabel = angleUnit.rawValue } }
     var displayFmt: DisplayFmt = .norm
@@ -99,6 +142,45 @@ final class CasioEngine: CalculatorEngine {
     var eqnInput: String = ""
     var eqnResults: [String] = []
     var eqnShowResults: Bool = false
+
+    // MARK: CMPLX
+    var cmplxAns:   CasioComplex = CasioComplex()
+    var cmplxLhs:   CasioComplex? = nil
+    var cmplxOp:    String? = nil
+    var cmplxReStr: String = ""
+    var cmplxImStr: String = ""
+    var cmplxPhase: Int = 0          // 0 = entering Re, 1 = entering Im
+
+    // MARK: MATRIX
+    var matrices: [String: CasioMatrix] = [
+        "A": CasioMatrix(), "B": CasioMatrix(), "C": CasioMatrix(),
+        "Ans": CasioMatrix()
+    ]
+    var matTarget:  String = "A"
+    var matPhase:   CasioMatPhase = .select
+    var matCurRow:  Int = 0; var matCurCol: Int = 0
+    var matInputStr: String = ""
+    var matOp:      String? = nil
+    var matLhsName: String? = nil
+
+    // MARK: VECTOR
+    var vectors:    [String: [Double]] = ["A": [0, 0], "B": [0, 0]]
+    var vctTarget:  String = "A"
+    var vctPhase:   CasioVctPhase = .select
+    var vctCurIdx:  Int = 0
+    var vctInputStr: String = ""
+    var vctOp:      String? = nil
+    var vctLhsName: String? = nil
+
+    // MARK: TABLE
+    var tableExpr:    String = ""
+    var tableStart:   Double = 1
+    var tableEnd:     Double = 5
+    var tableStep:    Double = 1
+    var tablePhase:   CasioTablePhase = .expr
+    var tableData:    [(x: Double, fx: Double)] = []
+    var tableInputStr: String = ""
+    var tableViewRow: Int = 0
 
     // MARK: Private
     private var hasResult = false
@@ -130,6 +212,10 @@ final class CasioEngine: CalculatorEngine {
         case .stat:   dispatchStat(key)
         case .eqn:    dispatchEqn(key)
         case .baseN:  dispatchBaseN(key)
+        case .cmplx:  dispatchCmplx(key)
+        case .matrix: dispatchMatrix(key)
+        case .vector: dispatchVector(key)
+        case .table:  dispatchTable(key)
         default:      dispatchComp(key)
         }
     }
@@ -327,6 +413,565 @@ final class CasioEngine: CalculatorEngine {
         let r = fmt(result)
         tape.append(TapeEntry(label: label, result: r))
         ans = result; expression = r; displayText = r; hasResult = true
+    }
+
+    // MARK: - CMPLX dispatch
+
+    private func dispatchCmplx(_ key: String) {
+        switch key {
+        case "AC":
+            resetCmplx()
+        case "DEL","←":
+            if cmplxPhase == 0 { if !cmplxReStr.isEmpty { cmplxReStr.removeLast() } }
+            else               { if !cmplxImStr.isEmpty { cmplxImStr.removeLast() } }
+            refreshCmplxDisplay()
+        case "i":
+            cmplxPhase = 1; refreshCmplxDisplay()
+        case "0","1","2","3","4","5","6","7","8","9":
+            if cmplxPhase == 0 { cmplxReStr += key } else { cmplxImStr += key }
+            refreshCmplxDisplay()
+        case ".":
+            if cmplxPhase == 0 { if !cmplxReStr.contains(".") { cmplxReStr += "." } }
+            else               { if !cmplxImStr.contains(".") { cmplxImStr += "." } }
+            refreshCmplxDisplay()
+        case "(-)":
+            if cmplxPhase == 0 {
+                cmplxReStr = cmplxReStr.hasPrefix("-") ? String(cmplxReStr.dropFirst()) : "-" + cmplxReStr
+            } else {
+                cmplxImStr = cmplxImStr.hasPrefix("-") ? String(cmplxImStr.dropFirst()) : "-" + cmplxImStr
+            }
+            refreshCmplxDisplay()
+        case "+","-","×","÷":
+            let z = cmplxFromInput()
+            cmplxLhs = z; cmplxOp = key
+            cmplxReStr = ""; cmplxImStr = ""; cmplxPhase = 0
+            expression = cmplxFmt(z) + key; displayText = cmplxFmt(z)
+        case "=":
+            let rhs = cmplxFromInput()
+            let lhs = cmplxLhs ?? cmplxAns
+            let op  = cmplxOp  ?? "+"
+            var result = CasioComplex()
+            switch op {
+            case "+": result = lhs + rhs
+            case "-": result = lhs - rhs
+            case "×": result = lhs * rhs
+            case "÷":
+                guard rhs.magnitude > 1e-15 else { displayText = "Math ERROR"; return }
+                result = lhs / rhs
+            default: result = rhs
+            }
+            let label = cmplxFmt(lhs) + op + cmplxFmt(rhs)
+            tape.append(TapeEntry(label: label, result: cmplxFmt(result)))
+            expression = label; displayText = cmplxFmt(result)
+            cmplxAns = result; cmplxLhs = nil; cmplxOp = nil
+            cmplxReStr = ""; cmplxImStr = ""; cmplxPhase = 0
+        case "Re":
+            displayText = fmt(cmplxAns.re); expression = "Re(" + cmplxFmt(cmplxAns) + ")"
+        case "Im":
+            displayText = fmt(cmplxAns.im); expression = "Im(" + cmplxFmt(cmplxAns) + ")"
+        case "|z|":
+            displayText = fmt(cmplxAns.magnitude); expression = "|" + cmplxFmt(cmplxAns) + "|"
+        case "Arg":
+            displayText = fmt(angleUnit.fromRadians(cmplxAns.argument))
+            expression = "Arg(" + cmplxFmt(cmplxAns) + ")"
+        case "Conj":
+            cmplxAns = cmplxAns.conjugate; displayText = cmplxFmt(cmplxAns)
+            expression = "Conj"
+        default: break
+        }
+    }
+
+    private func cmplxFromInput() -> CasioComplex {
+        CasioComplex(re: Double(cmplxReStr) ?? 0, im: Double(cmplxImStr) ?? 0)
+    }
+
+    private func refreshCmplxDisplay() {
+        let re = cmplxReStr.isEmpty ? "0" : cmplxReStr
+        expression = cmplxPhase == 0 ? "Re:" : "Im:"
+        if cmplxPhase == 0 { displayText = re }
+        else {
+            let im = cmplxImStr.isEmpty ? "?" : cmplxImStr
+            displayText = re + (cmplxImStr.hasPrefix("-") ? "" : "+") + im + "i"
+        }
+    }
+
+    func cmplxFmt(_ z: CasioComplex) -> String {
+        let r = fmt(z.re), a = fmt(Swift.abs(z.im))
+        if Swift.abs(z.im) < 1e-14 { return r }
+        if Swift.abs(z.re) < 1e-14 { return (z.im < 0 ? "-" : "") + a + "i" }
+        return r + (z.im < 0 ? "-" : "+") + a + "i"
+    }
+
+    private func resetCmplx() {
+        cmplxAns = CasioComplex(); cmplxLhs = nil; cmplxOp = nil
+        cmplxReStr = ""; cmplxImStr = ""; cmplxPhase = 0
+        expression = "CMPLX"; displayText = "0"
+    }
+
+    // MARK: - MATRIX dispatch
+
+    private func dispatchMatrix(_ key: String) {
+        switch matPhase {
+
+        case .select:
+            switch key {
+            case "A","MatA": startMatFill("A")
+            case "B","MatB": startMatFill("B")
+            case "C","MatC": startMatFill("C")
+            case "AC":       resetMatrix()
+            default: break
+            }
+
+        case .dimR:
+            if let n = Int(key), (1...3).contains(n) {
+                matrices[matTarget]?.rows = n
+                matPhase = .dimC; expression = "Mat\(matTarget) \(n)×?"
+                displayText = "Cols (1-3)?"
+            } else if key == "AC" { resetMatrix() }
+
+        case .dimC:
+            if let n = Int(key), (1...3).contains(n) {
+                let r = matrices[matTarget]?.rows ?? 2
+                matrices[matTarget] = CasioMatrix(rows: r, cols: n)
+                matCurRow = 0; matCurCol = 0; matInputStr = ""
+                matPhase = .fill
+                expression = "Mat\(matTarget)[\(matCurRow+1),\(matCurCol+1)]=?"
+                displayText = "0"
+            } else if key == "AC" { resetMatrix() }
+
+        case .fill:
+            switch key {
+            case "0","1","2","3","4","5","6","7","8","9",".":
+                matInputStr += key; displayText = matInputStr
+            case "(-)":
+                matInputStr = matInputStr.hasPrefix("-") ? String(matInputStr.dropFirst()) : "-"+matInputStr
+                displayText = matInputStr.isEmpty ? "0" : matInputStr
+            case "DEL","←":
+                if !matInputStr.isEmpty { matInputStr.removeLast()
+                    displayText = matInputStr.isEmpty ? "0" : matInputStr }
+            case "=":
+                matrices[matTarget]?.data[matCurRow][matCurCol] = Double(matInputStr) ?? 0
+                matInputStr = ""
+                let m = matrices[matTarget]!
+                matCurCol += 1
+                if matCurCol >= m.cols { matCurCol = 0; matCurRow += 1 }
+                if matCurRow >= m.rows {
+                    matPhase = .ops; expression = "Mat\(matTarget)"
+                    displayText = matSummary(matTarget)
+                } else {
+                    expression = "Mat\(matTarget)[\(matCurRow+1),\(matCurCol+1)]=?"
+                    displayText = "0"
+                }
+            case "AC": resetMatrix()
+            default: break
+            }
+
+        case .ops:
+            switch key {
+            case "+","-","×":
+                matLhsName = matTarget; matOp = key; matPhase = .rhs
+                expression = "Mat\(matTarget)\(key)?"; displayText = "A B C"
+            case "Det":
+                guard let m = matrices[matTarget], m.rows == m.cols else { displayText = "Dim ERROR"; return }
+                let d = matDet(m)
+                tape.append(TapeEntry(label: "det(Mat\(matTarget))", result: fmt(d)))
+                displayText = fmt(d); expression = "det(Mat\(matTarget))"
+            case "Trn":
+                guard let m = matrices[matTarget] else { return }
+                matrices["Ans"] = matTranspose(m)
+                matTarget = "Ans"; matPhase = .result
+                displayText = matSummary("Ans"); expression = "Trn(Mat\(matTarget))"
+            case "Inv":
+                guard let m = matrices[matTarget], m.rows == m.cols else { displayText = "Dim ERROR"; return }
+                guard let inv = matInverse(m) else { displayText = "Singular MAT"; return }
+                matrices["Ans"] = inv; matTarget = "Ans"; matPhase = .result
+                displayText = matSummary("Ans"); expression = "Mat\(matTarget)⁻¹"
+            case "AC": resetMatrix()
+            default:
+                if ["A","B","C","MatA","MatB","MatC"].contains(key) {
+                    let t = key.hasSuffix("A") ? "A" : key.hasSuffix("B") ? "B" : "C"
+                    matTarget = t; expression = "Mat\(t)"; displayText = matSummary(t)
+                }
+            }
+
+        case .rhs:
+            let rhsName: String?
+            switch key {
+            case "A","MatA": rhsName = "A"
+            case "B","MatB": rhsName = "B"
+            case "C","MatC": rhsName = "C"
+            case "AC":       resetMatrix(); return
+            default:         rhsName = nil
+            }
+            guard let rn = rhsName,
+                  let lhs = matrices[matLhsName ?? matTarget],
+                  let rhs = matrices[rn] else { break }
+            switch matOp {
+            case "+":
+                guard lhs.rows == rhs.rows, lhs.cols == rhs.cols else { displayText = "Dim ERROR"; matPhase = .ops; return }
+                var res = CasioMatrix(rows: lhs.rows, cols: lhs.cols)
+                for r in 0..<lhs.rows { for c in 0..<lhs.cols { res[r,c] = lhs[r,c] + rhs[r,c] } }
+                matrices["Ans"] = res
+            case "-":
+                guard lhs.rows == rhs.rows, lhs.cols == rhs.cols else { displayText = "Dim ERROR"; matPhase = .ops; return }
+                var res = CasioMatrix(rows: lhs.rows, cols: lhs.cols)
+                for r in 0..<lhs.rows { for c in 0..<lhs.cols { res[r,c] = lhs[r,c] - rhs[r,c] } }
+                matrices["Ans"] = res
+            case "×":
+                guard lhs.cols == rhs.rows else { displayText = "Dim ERROR"; matPhase = .ops; return }
+                matrices["Ans"] = matMul(lhs, rhs)
+            default: break
+            }
+            matTarget = "Ans"; matPhase = .result
+            expression = "Mat\(matLhsName ?? "?")\(matOp ?? "")Mat\(rn)"
+            displayText = matSummary("Ans")
+            tape.append(TapeEntry(label: expression, result: displayText))
+
+        case .result:
+            if key == "AC" { resetMatrix() }
+        }
+    }
+
+    // Matrix helpers
+    private func startMatFill(_ name: String) {
+        matTarget = name; matPhase = .dimR
+        expression = "Mat\(name) Rows?"; displayText = "1-3"
+    }
+
+    private func matSummary(_ name: String) -> String {
+        guard let m = matrices[name] else { return "?" }
+        let rows = m.data.map { row in
+            row.map { v in fmt(v) }.joined(separator: " ")
+        }.joined(separator: " | ")
+        return "[\(m.rows)×\(m.cols)] \(rows)"
+    }
+
+    private func matDet(_ m: CasioMatrix) -> Double {
+        let n = m.rows
+        if n == 1 { return m.data[0][0] }
+        if n == 2 { return m.data[0][0]*m.data[1][1] - m.data[0][1]*m.data[1][0] }
+        // 3×3 cofactor expansion
+        var d = 0.0
+        for c in 0..<n {
+            var sub = CasioMatrix(rows: n-1, cols: n-1)
+            for r in 1..<n {
+                var cc = 0
+                for j in 0..<n { if j == c { continue }; sub.data[r-1][cc] = m.data[r][j]; cc += 1 }
+            }
+            d += (c % 2 == 0 ? 1 : -1) * m.data[0][c] * matDet(sub)
+        }
+        return d
+    }
+
+    private func matTranspose(_ m: CasioMatrix) -> CasioMatrix {
+        var t = CasioMatrix(rows: m.cols, cols: m.rows)
+        for r in 0..<m.rows { for c in 0..<m.cols { t.data[c][r] = m.data[r][c] } }
+        return t
+    }
+
+    private func matInverse(_ m: CasioMatrix) -> CasioMatrix? {
+        let n = m.rows; guard n == m.cols else { return nil }
+        var aug = m.data.enumerated().map { (i, row) -> [Double] in
+            var r = row; r += Array(repeating: 0.0, count: n)
+            r[n + i] = 1.0; return r
+        }
+        for col in 0..<n {
+            guard let pivot = (col..<n).max(by: { Swift.abs(aug[$0][col]) < Swift.abs(aug[$1][col]) }) else { return nil }
+            aug.swapAt(col, pivot)
+            guard Swift.abs(aug[col][col]) > 1e-12 else { return nil }
+            let scale = aug[col][col]
+            aug[col] = aug[col].map { $0 / scale }
+            for r in 0..<n where r != col {
+                let f = aug[r][col]
+                aug[r] = zip(aug[r], aug[col]).map { $0 - f * $1 }
+            }
+        }
+        var inv = CasioMatrix(rows: n, cols: n)
+        for r in 0..<n { for c in 0..<n { inv.data[r][c] = aug[r][n+c] } }
+        return inv
+    }
+
+    private func matMul(_ a: CasioMatrix, _ b: CasioMatrix) -> CasioMatrix {
+        var res = CasioMatrix(rows: a.rows, cols: b.cols)
+        for i in 0..<a.rows { for j in 0..<b.cols { for k in 0..<a.cols {
+            res.data[i][j] += a.data[i][k] * b.data[k][j]
+        } } }
+        return res
+    }
+
+    private func resetMatrix() {
+        matPhase = .select; matTarget = "A"; matOp = nil; matLhsName = nil
+        matCurRow = 0; matCurCol = 0; matInputStr = ""
+        expression = "MATRIX"; displayText = "A  B  C"
+    }
+
+    // MARK: - VECTOR dispatch
+
+    private func dispatchVector(_ key: String) {
+        switch vctPhase {
+
+        case .select:
+            switch key {
+            case "A","VctA": startVctFill("A")
+            case "B","VctB": startVctFill("B")
+            case "AC":       resetVector()
+            default: break
+            }
+
+        case .dim:
+            switch key {
+            case "2": setVctDim("A", dim: 2); setVctDim("B", dim: 2)
+                      vctCurIdx = 0; vctInputStr = ""
+                      vctPhase = .fill
+                      expression = "Vct\(vctTarget)[\(vctCurIdx+1)]=?"; displayText = "0"
+            case "3": setVctDim("A", dim: 3); setVctDim("B", dim: 3)
+                      vctCurIdx = 0; vctInputStr = ""
+                      vctPhase = .fill
+                      expression = "Vct\(vctTarget)[\(vctCurIdx+1)]=?"; displayText = "0"
+            case "AC": resetVector()
+            default: break
+            }
+
+        case .fill:
+            switch key {
+            case "0","1","2","3","4","5","6","7","8","9",".":
+                vctInputStr += key; displayText = vctInputStr
+            case "(-)":
+                vctInputStr = vctInputStr.hasPrefix("-") ? String(vctInputStr.dropFirst()) : "-"+vctInputStr
+                displayText = vctInputStr.isEmpty ? "0" : vctInputStr
+            case "DEL","←":
+                if !vctInputStr.isEmpty { vctInputStr.removeLast()
+                    displayText = vctInputStr.isEmpty ? "0" : vctInputStr }
+            case "=":
+                vectors[vctTarget]?[vctCurIdx] = Double(vctInputStr) ?? 0
+                vctInputStr = ""; vctCurIdx += 1
+                let dim = vectors[vctTarget]?.count ?? 2
+                if vctCurIdx >= dim {
+                    vctPhase = .ops; expression = "Vct\(vctTarget)"
+                    displayText = vctSummary(vctTarget)
+                } else {
+                    expression = "Vct\(vctTarget)[\(vctCurIdx+1)]=?"; displayText = "0"
+                }
+            case "AC": resetVector()
+            default: break
+            }
+
+        case .ops:
+            switch key {
+            case "+","-":
+                vctLhsName = vctTarget; vctOp = key; vctPhase = .rhs
+                expression = "Vct\(vctTarget)\(key)?"; displayText = "A  B"
+            case "·","Dot":
+                vctLhsName = vctTarget; vctOp = "·"; vctPhase = .rhs
+                expression = "Vct\(vctTarget)·?"; displayText = "A  B"
+            case "×","Cross":
+                vctLhsName = vctTarget; vctOp = "×"; vctPhase = .rhs
+                expression = "Vct\(vctTarget)×?"; displayText = "A  B"
+            case "|v|":
+                let v = vectors[vctTarget] ?? []
+                let mag = v.map { $0*$0 }.reduce(0,+).squareRoot()
+                tape.append(TapeEntry(label: "|Vct\(vctTarget)|", result: fmt(mag)))
+                displayText = fmt(mag); expression = "|Vct\(vctTarget)|"
+            case "Ang":
+                guard let a = vectors["A"], let b = vectors["B"],
+                      a.count == b.count else { displayText = "Dim ERROR"; return }
+                let dot = zip(a,b).map(*).reduce(0,+)
+                let ma = a.map{$0*$0}.reduce(0,+).squareRoot()
+                let mb = b.map{$0*$0}.reduce(0,+).squareRoot()
+                guard ma > 1e-15, mb > 1e-15 else { displayText = "Math ERROR"; return }
+                let angle = angleUnit.fromRadians(acos(max(-1, min(1, dot/(ma*mb)))))
+                displayText = fmt(angle); expression = "∠(VctA,VctB)"
+            case "AC": resetVector()
+            default:
+                if ["A","VctA"].contains(key) { vctTarget = "A"; expression = "VctA"; displayText = vctSummary("A") }
+                if ["B","VctB"].contains(key) { vctTarget = "B"; expression = "VctB"; displayText = vctSummary("B") }
+            }
+
+        case .rhs:
+            let rhsName: String?
+            switch key {
+            case "A","VctA": rhsName = "A"
+            case "B","VctB": rhsName = "B"
+            case "AC":       resetVector(); return
+            default:         rhsName = nil
+            }
+            guard let rn = rhsName,
+                  let lv = vectors[vctLhsName ?? vctTarget],
+                  let rv = vectors[rn] else { break }
+            switch vctOp {
+            case "+":
+                guard lv.count == rv.count else { displayText = "Dim ERROR"; vctPhase = .ops; return }
+                let res = zip(lv, rv).map(+)
+                vectors["Ans"] = res; vctTarget = "Ans"; vctPhase = .result
+                displayText = vctSummary("Ans")
+            case "-":
+                guard lv.count == rv.count else { displayText = "Dim ERROR"; vctPhase = .ops; return }
+                let res = zip(lv, rv).map(-)
+                vectors["Ans"] = res; vctTarget = "Ans"; vctPhase = .result
+                displayText = vctSummary("Ans")
+            case "·":
+                guard lv.count == rv.count else { displayText = "Dim ERROR"; vctPhase = .ops; return }
+                let dot = zip(lv, rv).map(*).reduce(0,+)
+                tape.append(TapeEntry(label: "Vct\(vctLhsName ?? "?")·Vct\(rn)", result: fmt(dot)))
+                displayText = fmt(dot); expression = "Vct\(vctLhsName ?? "?")·Vct\(rn)"
+                vctPhase = .ops; return
+            case "×":
+                guard lv.count == 3, rv.count == 3 else { displayText = "3D only"; vctPhase = .ops; return }
+                let cx = lv[1]*rv[2] - lv[2]*rv[1]
+                let cy = lv[2]*rv[0] - lv[0]*rv[2]
+                let cz = lv[0]*rv[1] - lv[1]*rv[0]
+                vectors["Ans"] = [cx, cy, cz]; vctTarget = "Ans"; vctPhase = .result
+                displayText = vctSummary("Ans")
+            default: break
+            }
+            expression = "Vct\(vctLhsName ?? "?")\(vctOp ?? "")Vct\(rn)"
+            tape.append(TapeEntry(label: expression, result: displayText))
+
+        case .result:
+            if key == "AC" { resetVector() }
+        }
+    }
+
+    private func startVctFill(_ name: String) {
+        vctTarget = name; vctPhase = .dim
+        expression = "Vct\(name) Dim?"; displayText = "2  or  3"
+    }
+
+    private func setVctDim(_ name: String, dim: Int) {
+        vectors[name] = Array(repeating: 0.0, count: dim)
+    }
+
+    private func vctSummary(_ name: String) -> String {
+        guard let v = vectors[name] else { return "?" }
+        return "(" + v.map { fmt($0) }.joined(separator: ", ") + ")"
+    }
+
+    private func resetVector() {
+        vctPhase = .select; vctTarget = "A"; vctOp = nil; vctLhsName = nil
+        vctCurIdx = 0; vctInputStr = ""
+        expression = "VECTOR"; displayText = "A  B"
+    }
+
+    // MARK: - TABLE dispatch
+
+    private func dispatchTable(_ key: String) {
+        switch tablePhase {
+
+        case .expr:
+            switch key {
+            case "AC":                 resetTable()
+            case "=":
+                if !tableExpr.isEmpty {
+                    tablePhase = .start; tableInputStr = ""
+                    expression = "f(x)=\(tableExpr)"; displayText = "Start?"
+                }
+            case "DEL","←":
+                if !tableExpr.isEmpty { tableExpr.removeLast()
+                    expression = "f(x)="; displayText = tableExpr.isEmpty ? "_" : tableExpr }
+            default:
+                // Allow any expression input the user types
+                tableExpr += key
+                expression = "f(x)="; displayText = tableExpr
+            }
+
+        case .start:
+            numericEntry(key, into: &tableInputStr,
+                         prompt: "f(x)=\(tableExpr)  Start?",
+                         onCommit: { v in
+                             self.tableStart = v
+                             self.tablePhase = .end; self.tableInputStr = ""
+                             self.expression = "Start=\(self.fmt(v))"; self.displayText = "End?"
+                         },
+                         onAC: resetTable)
+
+        case .end:
+            numericEntry(key, into: &tableInputStr,
+                         prompt: "Start=\(fmt(tableStart))  End?",
+                         onCommit: { v in
+                             self.tableEnd = v
+                             self.tablePhase = .step; self.tableInputStr = ""
+                             self.expression = "End=\(self.fmt(v))"; self.displayText = "Step?"
+                         },
+                         onAC: resetTable)
+
+        case .step:
+            numericEntry(key, into: &tableInputStr,
+                         prompt: "End=\(fmt(tableEnd))  Step?",
+                         onCommit: { v in
+                             guard v != 0 else { self.displayText = "Step≠0"; return }
+                             self.tableStep = v
+                             self.generateTable()
+                         },
+                         onAC: resetTable)
+
+        case .view:
+            switch key {
+            case "AC":              resetTable()
+            case "↑","UP":          tableViewRow = max(0, tableViewRow - 1); showTableRow()
+            case "↓","DOWN":        tableViewRow = min(tableData.count-1, tableViewRow + 1); showTableRow()
+            case "=","↓","Scroll":  tableViewRow = min(tableData.count-1, tableViewRow + 1); showTableRow()
+            default: break
+            }
+        }
+    }
+
+    private func numericEntry(_ key: String, into str: inout String,
+                              prompt: String, onCommit: (Double) -> Void, onAC: () -> Void) {
+        switch key {
+        case "0","1","2","3","4","5","6","7","8","9",".":
+            str += key; displayText = str
+        case "(-)":
+            str = str.hasPrefix("-") ? String(str.dropFirst()) : "-"+str
+            displayText = str.isEmpty ? "0" : str
+        case "DEL","←":
+            if !str.isEmpty { str.removeLast(); displayText = str.isEmpty ? "0" : str }
+        case "=":
+            onCommit(Double(str) ?? 0)
+        case "AC":
+            onAC()
+        default: break
+        }
+    }
+
+    private func generateTable() {
+        tableData = []
+        var x = tableStart
+        let sign: Double = tableStep > 0 ? 1 : -1
+        while sign * x <= sign * tableEnd + 1e-10 {
+            if let fx = evaluateTable(x) {
+                tableData.append((x: x, fx: fx))
+            }
+            x += tableStep
+        }
+        guard !tableData.isEmpty else { displayText = "No data"; return }
+        tablePhase = .view; tableViewRow = 0
+        // Populate tape with table rows
+        tape = tableData.map { TapeEntry(label: "x=\(fmt($0.x))", result: "f(x)=\(fmt($0.fx))") }
+        showTableRow()
+    }
+
+    private func showTableRow() {
+        guard tableViewRow < tableData.count else { return }
+        let row = tableData[tableViewRow]
+        expression = "x=\(fmt(row.x))"
+        displayText = fmt(row.fx)
+    }
+
+    private func evaluateTable(_ x: Double) -> Double? {
+        var s = tableExpr
+        s = s.replacingOccurrences(of: "x", with: "(\(fmt(x)))")
+        s = s.replacingOccurrences(of: "Ans", with: "(\(fmt(ans)))")
+        for (k, v) in vars { s = s.replacingOccurrences(of: k, with: "(\(fmt(v)))") }
+        var p = ExprParser(input: s, angle: angleUnit)
+        guard let result = p.parseExpr(), p.atEnd else { return nil }
+        return result.isFinite ? result : nil
+    }
+
+    private func resetTable() {
+        tableExpr = ""; tableStart = 1; tableEnd = 5; tableStep = 1
+        tablePhase = .expr; tableData = []; tableViewRow = 0; tableInputStr = ""
+        expression = "f(x)="; displayText = "_"
+        tape = []
     }
 
     // MARK: - Evaluate (substitutes variables then runs parser)
