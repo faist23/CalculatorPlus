@@ -9,6 +9,7 @@ final class HPFinancialEngine {
     // MARK: - RPN Stack  (X = index 0, Y = 1, Z = 2, T = 3)
     var stack: [Double] = [0, 0, 0, 0]
     var displayText: String = "0.00"
+    var displayDecimalPlaces: Int = 2
     var isTypingNumber: Bool = false
     var stackLiftEnabled: Bool = true
 
@@ -37,6 +38,9 @@ final class HPFinancialEngine {
     var statN:    Double = 0
     var statSumX: Double = 0
     var statSumX2: Double = 0
+
+    // MARK: - Last X register
+    var lastX: Double = 0
 
     // MARK: - Pending two-key sequence (STO/RCL)
     var pendingInput: PendingInput = .none
@@ -108,7 +112,7 @@ final class HPFinancialEngine {
             }
 
         case "CLX", "CLx":
-            isTypingNumber = false; stack[0] = 0; displayText = "0.00"
+            isTypingNumber = false; stack[0] = 0; displayText = fmt(0)
 
         case "x≷y":
             if isTypingNumber { commitTyping() }
@@ -137,6 +141,7 @@ final class HPFinancialEngine {
         case "1/x":
             if stack[0] == 0 { displayText = "Error"; return }
             if isTypingNumber { commitTyping() }
+            lastX = stack[0]
             stack[0] = 1 / stack[0]; displayText = fmt(stack[0])
             isTypingNumber = false; stackLiftEnabled = true
 
@@ -309,6 +314,13 @@ final class HPFinancialEngine {
         case "CLΣ":
             statN = 0; statSumX = 0; statSumX2 = 0
 
+        case "LSTx":
+            if isTypingNumber { commitTyping() }
+            if stackLiftEnabled { pushStack() }
+            stack[0] = lastX
+            displayText = fmt(lastX)
+            isTypingNumber = false; stackLiftEnabled = true
+
         default:
             break
         }
@@ -358,6 +370,7 @@ final class HPFinancialEngine {
 
     private func binary(_ op: (Double, Double) -> Double) {
         if isTypingNumber { commitTyping() }
+        lastX = stack[0]
         let result = op(stack[1], stack[0])
         popStack()
         stack[0] = result; displayText = fmt(result)
@@ -614,13 +627,8 @@ final class HPFinancialEngine {
         guard n.isFinite else { return "Error" }
         let absN = abs(n)
         if absN >= 1e10 || (absN < 1e-4 && absN != 0) {
-            return String(format: "%.6g", n)
+            return String(format: "%.\(max(4, displayDecimalPlaces))g", n)
         }
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.usesGroupingSeparator = true
-        f.minimumFractionDigits = 2
-        f.maximumFractionDigits = 6
-        return f.string(from: NSNumber(value: n)) ?? "0.00"
+        return String(format: "%.\(displayDecimalPlaces)f", n)
     }
 }

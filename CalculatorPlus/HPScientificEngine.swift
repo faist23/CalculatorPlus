@@ -7,6 +7,7 @@ final class HPScientificEngine {
     // MARK: - RPN Stack  (X = index 0, Y = 1, Z = 2, T = 3)
     var stack: [Double] = [0, 0, 0, 0]
     var displayText: String = "0.0000"
+    var displayDecimalPlaces: Int = 4
     var isTypingNumber: Bool = false
     var stackLiftEnabled: Bool = true
 
@@ -19,6 +20,9 @@ final class HPScientificEngine {
 
     // MARK: - Storage registers R0–R9
     var storageRegs: [Double] = Array(repeating: 0, count: 10)
+
+    // MARK: - Last X register
+    var lastX: Double = 0
 
     // MARK: - RNG (HP 15C LCG: r = frac(9821r + 0.211327))
     var rngSeed: Double = 0.5
@@ -116,7 +120,20 @@ final class HPScientificEngine {
             }
 
         case "CLx":
-            isTypingNumber = false; stack[0] = 0; displayText = "0.0000"
+            isTypingNumber = false; stack[0] = 0; displayText = fmt(0)
+
+        case "←":
+            if isTypingNumber {
+                if displayText.count > 1 {
+                    displayText = String(displayText.dropLast())
+                    if displayText == "-" { displayText = "0" }
+                } else {
+                    displayText = "0"
+                }
+                stack[0] = parseDisplay()
+            } else {
+                stack[0] = 0; displayText = fmt(0)
+            }
 
         case "x≷y":
             if isTypingNumber { commitTyping() }
@@ -272,19 +289,136 @@ final class HPScientificEngine {
         case "RCL":
             pendingInput = .rcl
 
-        case "CLΣ":
+        case "CLΣ", "Σ":
             statN = 0; statSumX = 0; statSumY = 0
             statSumX2 = 0; statSumY2 = 0; statSumXY = 0
 
-        // UNIT CONVERSIONS (g-shift on number keys)
-        case "→km": unary { $0 * 1.60934 }   // miles → km
-        case "→mi": unary { $0 / 1.60934 }   // km → miles
-        case "→cm": unary { $0 * 2.54 }       // inches → cm
-        case "→in": unary { $0 / 2.54 }       // cm → inches
-        case "→m":  unary { $0 * 0.3048 }     // feet → meters
-        case "→ft": unary { $0 / 0.3048 }     // meters → feet
-        case "→kg": unary { $0 * 0.453592 }   // lb → kg
-        case "→lb": unary { $0 / 0.453592 }   // kg → lb
+        // PERCENT
+        case "%":
+            if isTypingNumber { commitTyping() }
+            stack[0] = stack[1] * stack[0] / 100.0
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
+
+        case "Δ%":
+            if isTypingNumber { commitTyping() }
+            guard stack[1] != 0 else { displayText = "Error"; return }
+            stack[0] = (stack[0] - stack[1]) / abs(stack[1]) * 100.0
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
+
+        // LAST X
+        case "LSTx":
+            if isTypingNumber { commitTyping() }
+            if stackLiftEnabled { pushStack() }
+            stack[0] = lastX
+            displayText = fmt(lastX)
+            isTypingNumber = false; stackLiftEnabled = true
+
+        // ANGLE VALUE CONVERSIONS (convert the number, don't change mode)
+        case "→RAD": unary { $0 * .pi / 180.0 }
+        case "→DEG": unary { $0 * 180.0 / .pi }
+
+        // POLAR ↔ RECTANGULAR  (HP 15C: Y=x-coord, X=y-coord → Y=r, X=θ and vice versa)
+        case "→P":
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let xCoord = stack[1], yCoord = stack[0]
+            let r = sqrt(xCoord * xCoord + yCoord * yCoord)
+            let theta = fromRad(atan2(yCoord, xCoord))
+            stack[1] = r; stack[0] = theta
+            displayText = fmt(theta); isTypingNumber = false; stackLiftEnabled = true
+
+        case "→R":
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let mag = stack[1], angle = toRad(stack[0])
+            stack[1] = mag * cos(angle)
+            stack[0] = mag * sin(angle)
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
+
+        // TIME CONVERSIONS  H.MMSS ↔ decimal hours
+        case "→H.MS":
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let hrs = stack[0]
+            let h = Foundation.trunc(hrs)
+            let mFrac = (hrs - h) * 60
+            let m = Foundation.trunc(mFrac)
+            let s = (mFrac - m) * 60
+            stack[0] = h + m / 100.0 + s / 10000.0
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
+
+        case "→H":
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let hms = stack[0]
+            let hh = Foundation.trunc(hms)
+            let mm = Foundation.trunc((hms - hh) * 100)
+            let ss = ((hms - hh) * 100 - mm) * 100
+            stack[0] = hh + mm / 60.0 + ss / 3600.0
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
+
+        // PERMUTATIONS AND COMBINATIONS  (Y=n, X=r)
+        case "Py,x":
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let nP = stack[1], rP = stack[0]
+            guard nP >= 0, rP >= 0, nP >= rP,
+                  nP == Foundation.trunc(nP), rP == Foundation.trunc(rP) else { displayText = "Error"; return }
+            var perm = 1.0
+            for k in 0..<Int(rP) { perm *= nP - Double(k) }
+            popStack(); stack[0] = perm; displayText = fmt(perm)
+            isTypingNumber = false; stackLiftEnabled = true
+
+        case "Cy,x":
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let nC = stack[1], rC = stack[0]
+            guard nC >= 0, rC >= 0, nC >= rC,
+                  nC == Foundation.trunc(nC), rC == Foundation.trunc(rC) else { displayText = "Error"; return }
+            var perm2 = 1.0
+            for k in 0..<Int(rC) { perm2 *= nC - Double(k) }
+            var fact2 = 1.0
+            if Int(rC) > 0 { for k in 1...Int(rC) { fact2 *= Double(k) } }
+            popStack(); stack[0] = perm2 / fact2; displayText = fmt(perm2 / fact2)
+            isTypingNumber = false; stackLiftEnabled = true
+
+        // LINEAR REGRESSION
+        case "L.R.":
+            guard statN > 1 else { displayText = "Error"; return }
+            if isTypingNumber { commitTyping() }
+            let mX = statSumX / statN, mY = statSumY / statN
+            let sxx = statSumX2 - statN * mX * mX
+            let sxy = statSumXY - statN * mX * mY
+            guard sxx != 0 else { displayText = "Error"; return }
+            let slope = sxy / sxx
+            let intercept = mY - slope * mX
+            stack[1] = intercept; stack[0] = slope
+            displayText = fmt(slope); isTypingNumber = false; stackLiftEnabled = true
+
+        case "ŷ,r":
+            guard statN > 1 else { displayText = "Error"; return }
+            if isTypingNumber { commitTyping() }
+            lastX = stack[0]
+            let mX2 = statSumX / statN, mY2 = statSumY / statN
+            let sxx2 = statSumX2 - statN * mX2 * mX2
+            let sxy2 = statSumXY - statN * mX2 * mY2
+            guard sxx2 != 0 else { displayText = "Error"; return }
+            let slope2 = sxy2 / sxx2
+            let intercept2 = mY2 - slope2 * mX2
+            let syy2 = statSumY2 - statN * mY2 * mY2
+            let corr = (sxx2 > 0 && syy2 > 0) ? sxy2 / sqrt(sxx2 * syy2) : 0
+            stack[1] = corr; stack[0] = intercept2 + slope2 * stack[0]
+            displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
+
+        // UNIT CONVERSIONS (extra convenience, not on HP 15C keys)
+        case "→km": unary { $0 * 1.609344 }
+        case "→mi": unary { $0 / 1.609344 }
+        case "→cm": unary { $0 * 2.54 }
+        case "→in": unary { $0 / 2.54 }
+        case "→m":  unary { $0 * 0.3048 }
+        case "→ft": unary { $0 / 0.3048 }
+        case "→kg": unary { $0 * 0.453592 }
+        case "→lb": unary { $0 / 0.453592 }
         case "→°C": unary { ($0 - 32.0) * 5.0 / 9.0 }
         case "→°F": unary { $0 * 9.0 / 5.0 + 32.0 }
 
@@ -337,12 +471,14 @@ final class HPScientificEngine {
 
     private func unary(_ op: (Double) -> Double) {
         if isTypingNumber { commitTyping() }
+        lastX = stack[0]
         stack[0] = op(stack[0])
         displayText = fmt(stack[0]); isTypingNumber = false; stackLiftEnabled = true
     }
 
     private func binary(_ op: (Double, Double) -> Double) {
         if isTypingNumber { commitTyping() }
+        lastX = stack[0]
         let result = op(stack[1], stack[0])
         popStack()
         stack[0] = result; displayText = fmt(result)
@@ -389,13 +525,8 @@ final class HPScientificEngine {
         guard n.isFinite else { return "Error" }
         let absN = abs(n)
         if absN >= 1e10 || (absN < 1e-4 && absN != 0) {
-            return String(format: "%.6g", n)
+            return String(format: "%.\(max(4, displayDecimalPlaces))g", n)
         }
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.usesGroupingSeparator = true
-        f.minimumFractionDigits = 4
-        f.maximumFractionDigits = 8
-        return f.string(from: NSNumber(value: n)) ?? "0.0000"
+        return String(format: "%.\(displayDecimalPlaces)f", n)
     }
 }

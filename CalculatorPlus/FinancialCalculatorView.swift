@@ -74,11 +74,11 @@ struct FinancialCalculatorView: View {
                 let vGap: CGFloat = 3
                 let cols: CGFloat = 10
                 let btnW = (geo.size.width - hPad * 2 - hGap * (cols - 1)) / cols
-                let fRowH = max(12, geo.size.height * 0.055)
+                let fRowH = max(12, min(18, geo.size.height * 0.055))
                 // "BOND / DEPRECIATION" header sits between rows 1 and 2 — give it its own slot
-                let groupH = max(10, geo.size.height * 0.042)
+                let groupH = max(10, min(14, geo.size.height * 0.042))
                 let availH = geo.size.height - fRowH * 4 - groupH * 2 - vGap * 9
-                let btnH = min(btnW * 1.3, availH / 4)
+                let btnH = min(min(btnW * 1.3, availH / 4), 80)
                 let tallH = btnH * 2 + vGap
 
                 // Bond/Depreciation groups for row 2 (indices into a 10-key row2)
@@ -194,14 +194,14 @@ struct FinancialCalculatorView: View {
             ).ignoresSafeArea()
         )
         .confirmationDialog("Calculator Mode", isPresented: $showModeMenu, titleVisibility: .visible) {
-            Button("Financial") {
-                useScientific = false
-                UserDefaults.standard.set(false, forKey: "hpUseScientific")
-            }
-            Button("Scientific") {
+            Button("Switch to Scientific") {
                 useScientific = true
                 UserDefaults.standard.set(true, forKey: "hpUseScientific")
             }
+            Button("FIX 0") { engine.displayDecimalPlaces = 0; engine.displayText = engine.fmt(engine.stack[0]) }
+            Button("FIX 2") { engine.displayDecimalPlaces = 2; engine.displayText = engine.fmt(engine.stack[0]) }
+            Button("FIX 4") { engine.displayDecimalPlaces = 4; engine.displayText = engine.fmt(engine.stack[0]) }
+            Button("FIX 6") { engine.displayDecimalPlaces = 6; engine.displayText = engine.fmt(engine.stack[0]) }
             Button("Cancel", role: .cancel) {}
         }
     }
@@ -231,6 +231,10 @@ struct FinancialCalculatorView: View {
                             .foregroundColor(.black.opacity(0.65))
                             .padding(.leading, 4)
                     }
+                    Text("FIX \(engine.displayDecimalPlaces)")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.black.opacity(0.45))
+                        .padding(.leading, 6)
                     Spacer()
                     Button { showModeMenu = true } label: {
                         Image(systemName: "gear")
@@ -249,6 +253,22 @@ struct FinancialCalculatorView: View {
 
                 Spacer(minLength: 4)
 
+                // Y register
+                HStack {
+                    Text("y")
+                        .font(.custom("Courier", size: 13))
+                        .foregroundColor(.black.opacity(0.35))
+                    Spacer()
+                    Text(engine.fmt(engine.stack[1]))
+                        .font(.custom("Courier", size: 21))
+                        .foregroundColor(.black.opacity(0.45))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
+                .padding(.horizontal, 8)
+                .frame(height: 28)
+
+                // X register (main display)
                 HStack {
                     Spacer()
                     Text(engine.displayText)
@@ -262,7 +282,7 @@ struct FinancialCalculatorView: View {
                 .frame(height: 42)
             }
         }
-        .frame(height: hasTape ? 140 : 68)
+        .frame(height: hasTape ? 156 : 100)
         .padding(.horizontal, 14)
         .padding(.top, 6)
     }

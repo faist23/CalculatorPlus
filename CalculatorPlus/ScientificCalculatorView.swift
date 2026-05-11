@@ -34,7 +34,7 @@ struct ScientificCalculatorView: View {
         HPKey("4",   f: "x≥0",   g: "SF"),
         HPKey("5",   f: "DSE",    g: "CF"),
         HPKey("6",   f: "ISG",    g: "F?"),
-        HPKey("×",   f: "∫ˣᵧ",   g: "x=0"),
+        HPKey("×",   f: "∫xy",   g: "x=0"),
     ]
 
     // Rows 3 & 4: left 5 cols, tall ENTER, right 4 cols
@@ -76,10 +76,10 @@ struct ScientificCalculatorView: View {
                 let vGap: CGFloat = 3
                 let cols: CGFloat = 10
                 let btnW = (geo.size.width - hPad * 2 - hGap * (cols - 1)) / cols
-                let fRowH = max(12, geo.size.height * 0.055)
-                let groupH = max(10, geo.size.height * 0.042)
+                let fRowH = max(12, min(18, geo.size.height * 0.055))
+                let groupH = max(10, min(14, geo.size.height * 0.042))
                 let availH = geo.size.height - fRowH * 4 - groupH - vGap * 8
-                let btnH = min(btnW * 1.3, availH / 4)
+                let btnH = min(min(btnW * 1.3, availH / 4), 80)
                 let tallH = btnH * 2 + vGap
 
                 let clearGroups = [
@@ -187,14 +187,14 @@ struct ScientificCalculatorView: View {
             ).ignoresSafeArea()
         )
         .confirmationDialog("Calculator Mode", isPresented: $showModeMenu, titleVisibility: .visible) {
-            Button("Financial") {
+            Button("Switch to Financial") {
                 useScientific = false
                 UserDefaults.standard.set(false, forKey: "hpUseScientific")
             }
-            Button("Scientific") {
-                useScientific = true
-                UserDefaults.standard.set(true, forKey: "hpUseScientific")
-            }
+            Button("FIX 2") { engine.displayDecimalPlaces = 2; engine.displayText = engine.fmt(engine.stack[0]) }
+            Button("FIX 4") { engine.displayDecimalPlaces = 4; engine.displayText = engine.fmt(engine.stack[0]) }
+            Button("FIX 6") { engine.displayDecimalPlaces = 6; engine.displayText = engine.fmt(engine.stack[0]) }
+            Button("FIX 8") { engine.displayDecimalPlaces = 8; engine.displayText = engine.fmt(engine.stack[0]) }
             Button("Cancel", role: .cancel) {}
         }
     }
@@ -234,6 +234,10 @@ struct ScientificCalculatorView: View {
                             .foregroundColor(Color(red: 0.3, green: 0.5, blue: 0.95))
                             .padding(.leading, 4)
                     }
+                    Text("FIX \(engine.displayDecimalPlaces)")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.black.opacity(0.45))
+                        .padding(.leading, 4)
                     Spacer()
                     Button { showModeMenu = true } label: {
                         Image(systemName: "gear")
@@ -252,6 +256,22 @@ struct ScientificCalculatorView: View {
 
                 Spacer(minLength: 4)
 
+                // Y register
+                HStack {
+                    Text("y")
+                        .font(.custom("Courier", size: 13))
+                        .foregroundColor(.black.opacity(0.35))
+                    Spacer()
+                    Text(engine.fmt(engine.stack[1]))
+                        .font(.custom("Courier", size: 21))
+                        .foregroundColor(.black.opacity(0.45))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
+                .padding(.horizontal, 8)
+                .frame(height: 28)
+
+                // X register (main display)
                 HStack {
                     Spacer()
                     Text(engine.displayText)
@@ -265,7 +285,7 @@ struct ScientificCalculatorView: View {
                 .frame(height: 42)
             }
         }
-        .frame(height: hasTape ? 140 : 68)
+        .frame(height: hasTape ? 156 : 100)
         .padding(.horizontal, 14)
         .padding(.top, 6)
     }
