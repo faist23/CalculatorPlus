@@ -4,7 +4,7 @@ import Observation
 enum PendingInput { case none, sto, rcl }
 
 @Observable
-final class HPFinancialEngine {
+final class HPFinancialEngine: CalculatorEngine {
 
     // MARK: - RPN Stack  (X = index 0, Y = 1, Z = 2, T = 3)
     var stack: [Double] = [0, 0, 0, 0]

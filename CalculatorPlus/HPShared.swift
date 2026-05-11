@@ -4,12 +4,6 @@ import SwiftUI
 
 enum HPShiftMode { case none, f, g }
 
-struct TapeEntry: Identifiable {
-    let id = UUID()
-    let label: String
-    let result: String
-}
-
 struct HPKey {
     let main: String
     let fShift: String
@@ -198,7 +192,18 @@ struct FaceplateRow: View {
         HStack(spacing: gap) {
             ForEach(keys.indices, id: \.self) { i in
                 Group {
-                    if !keys[i].fShift.isEmpty {
+                    if keys[i].fShift == "∫xy" {
+                        let sz = min(max(9.0, keyHeight * 0.22), 12.0)
+                        HStack(alignment: .center, spacing: 1) {
+                            Text("∫")
+                                .font(.system(size: sz, weight: .semibold))
+                            VStack(spacing: -1) {
+                                Text("x").font(.system(size: max(5, sz * 0.58), weight: .semibold))
+                                Text("y").font(.system(size: max(5, sz * 0.58), weight: .semibold))
+                            }
+                        }
+                        .foregroundColor(HPDesign.faceplateGold)
+                    } else if !keys[i].fShift.isEmpty {
                         Text(keys[i].fShift)
                             .foregroundColor(HPDesign.faceplateGold)
                     } else {

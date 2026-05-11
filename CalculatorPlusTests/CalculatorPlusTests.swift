@@ -16,9 +16,10 @@ final class HPFinancialEngineTests: XCTestCase {
     }
 
     func testTVM_PV() {
+        // PMT=-599.55 (outflow) with these params → PV is positive (cash received)
         fin.tvmN = 360; fin.tvmI = 0.5; fin.tvmPMT = -599.55; fin.tvmFV = 0
         fin.dispatch("PV")
-        XCTAssertEqual(fin.stack[0], -100_000, accuracy: 1.0)
+        XCTAssertEqual(fin.stack[0], 100_000, accuracy: 1.0)
     }
 
     func testTVM_FV() {
@@ -236,7 +237,7 @@ final class HPScientificEngineTests: XCTestCase {
 
     func testKmToMiles() {
         sci.stack[0] = 1; sci.dispatch("→mi")
-        XCTAssertEqual(sci.stack[0], 0.6213711922, accuracy: 1e-6)
+        XCTAssertEqual(sci.stack[0], 1.0 / 1.609344, accuracy: 1e-6)
     }
 
     func testCelsiusToFahrenheit() {
@@ -256,5 +257,438 @@ final class HPScientificEngineTests: XCTestCase {
         sci.stack[1] = 0; sci.stack[0] = 6; sci.dispatch("Σ+")
         sci.dispatch("x̄")
         XCTAssertEqual(sci.stack[0], 5.0, accuracy: 1e-10)
+    }
+
+    // MARK: - LSTx
+
+    func testLSTx_afterUnary() {
+        sci.stack[0] = 3
+        sci.dispatch("x²")          // lastX = 3
+        sci.dispatch("LSTx")
+        XCTAssertEqual(sci.stack[0], 3.0, accuracy: 1e-10)
+    }
+
+    func testLSTx_afterBinary() {
+        sci.stack[1] = 10; sci.stack[0] = 4
+        sci.dispatch("+")           // lastX = 4 (X before +)
+        sci.dispatch("LSTx")
+        XCTAssertEqual(sci.stack[0], 4.0, accuracy: 1e-10)
+    }
+
+    // MARK: - Percent
+
+    func testPercent() {
+        sci.stack[1] = 200; sci.stack[0] = 15
+        sci.dispatch("%")
+        XCTAssertEqual(sci.stack[0], 30.0, accuracy: 1e-10)
+    }
+
+    func testDeltaPercent() {
+        sci.stack[1] = 100; sci.stack[0] = 125
+        sci.dispatch("Δ%")
+        XCTAssertEqual(sci.stack[0], 25.0, accuracy: 1e-10)
+    }
+
+    // MARK: - Angle value conversions
+
+    func testToRAD() {
+        sci.stack[0] = 180
+        sci.dispatch("→RAD")
+        XCTAssertEqual(sci.stack[0], Double.pi, accuracy: 1e-10)
+    }
+
+    func testToDEG() {
+        sci.stack[0] = Double.pi
+        sci.dispatch("→DEG")
+        XCTAssertEqual(sci.stack[0], 180.0, accuracy: 1e-10)
+    }
+
+    // MARK: - Polar ↔ Rectangular
+
+    func testToP_firstQuadrant() {
+        sci.stack[1] = 3; sci.stack[0] = 4   // x=3, y=4 → r=5, θ=53.13°
+        sci.dispatch("→P")
+        XCTAssertEqual(sci.stack[1], 5.0, accuracy: 1e-10)          // r
+        XCTAssertEqual(sci.stack[0], 53.13010235, accuracy: 1e-6)   // θ in degrees
+    }
+
+    func testToR_roundTrip() {
+        sci.stack[1] = 3; sci.stack[0] = 4
+        sci.dispatch("→P")
+        sci.dispatch("→R")
+        XCTAssertEqual(sci.stack[1], 3.0, accuracy: 1e-10)   // x
+        XCTAssertEqual(sci.stack[0], 4.0, accuracy: 1e-10)   // y
+    }
+
+    // MARK: - Time conversions
+
+    func testToHMS() {
+        sci.stack[0] = 1.5    // 1.5 decimal hours = 1h 30m 0s → 1.3000
+        sci.dispatch("→H.MS")
+        XCTAssertEqual(sci.stack[0], 1.3, accuracy: 1e-6)
+    }
+
+    func testToH() {
+        sci.stack[0] = 1.3    // 1h 30m → 1.5 decimal hours
+        sci.dispatch("→H")
+        XCTAssertEqual(sci.stack[0], 1.5, accuracy: 1e-6)
+    }
+
+    func testHMS_roundTrip() {
+        let original = 2.4524   // 2h 45m 24s in H.MMSS format
+        sci.stack[0] = original
+        sci.dispatch("→H")
+        sci.dispatch("→H.MS")
+        XCTAssertEqual(sci.stack[0], original, accuracy: 1e-6)
+    }
+
+    // MARK: - Permutations and combinations
+
+    func testPermutations() {
+        sci.stack[1] = 5; sci.stack[0] = 3   // P(5,3) = 60
+        sci.dispatch("Py,x")
+        XCTAssertEqual(sci.stack[0], 60.0, accuracy: 0)
+    }
+
+    func testCombinations() {
+        sci.stack[1] = 5; sci.stack[0] = 3   // C(5,3) = 10
+        sci.dispatch("Cy,x")
+        XCTAssertEqual(sci.stack[0], 10.0, accuracy: 0)
+    }
+
+    func testCombinations_C_n_0() {
+        sci.stack[1] = 7; sci.stack[0] = 0   // C(7,0) = 1
+        sci.dispatch("Cy,x")
+        XCTAssertEqual(sci.stack[0], 1.0, accuracy: 0)
+    }
+
+    // MARK: - Linear regression
+
+    func testLinearRegression_perfect() {
+        // y = 2x + 1:  (1,3), (2,5), (3,7)
+        sci.stack[1] = 3; sci.stack[0] = 1; sci.dispatch("Σ+")
+        sci.stack[1] = 5; sci.stack[0] = 2; sci.dispatch("Σ+")
+        sci.stack[1] = 7; sci.stack[0] = 3; sci.dispatch("Σ+")
+        sci.dispatch("L.R.")
+        XCTAssertEqual(sci.stack[0], 2.0, accuracy: 1e-10)   // slope
+        XCTAssertEqual(sci.stack[1], 1.0, accuracy: 1e-10)   // intercept
+    }
+
+    func testYHat() {
+        sci.stack[1] = 3; sci.stack[0] = 1; sci.dispatch("Σ+")
+        sci.stack[1] = 5; sci.stack[0] = 2; sci.dispatch("Σ+")
+        sci.stack[1] = 7; sci.stack[0] = 3; sci.dispatch("Σ+")
+        sci.stack[0] = 4   // predict ŷ at x=4 → should be 9
+        sci.dispatch("ŷ,r")
+        XCTAssertEqual(sci.stack[0], 9.0, accuracy: 1e-10)
+        XCTAssertEqual(sci.stack[1], 1.0, accuracy: 1e-10)   // perfect correlation r=1
+    }
+}
+
+final class CasioEngineTests: XCTestCase {
+
+    var eng: CasioEngine!
+
+    override func setUp() { eng = CasioEngine() }
+
+    // MARK: - Basic arithmetic
+
+    func testAddition() {
+        "2+3=".forEach { eng.dispatch(String($0)) }
+        XCTAssertEqual(eng.displayText, "5")
+    }
+
+    func testSubtraction() {
+        "10-7=".forEach { eng.dispatch(String($0)) }
+        XCTAssertEqual(eng.displayText, "3")
+    }
+
+    func testMultiplication() {
+        ["3", "×", "4", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "12")
+    }
+
+    func testDivision() {
+        ["1", "0", "÷", "4", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "2.5")
+    }
+
+    func testChainedOps() {
+        ["2", "+", "3", "+", "4", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "9")
+    }
+
+    // MARK: - Expression building & hasResult
+
+    func testDigitAfterResultStartsFresh() {
+        "5+5=".forEach { eng.dispatch(String($0)) }
+        eng.dispatch("3")
+        XCTAssertEqual(eng.expression, "3")
+    }
+
+    func testOperatorAfterResultContinues() {
+        "4+4=".forEach { eng.dispatch(String($0)) }   // result = 8
+        eng.dispatch("+")
+        eng.dispatch("2")
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "10")
+    }
+
+    // MARK: - AC / DEL
+
+    func testAC_clearsAll() {
+        "99+1=".forEach { eng.dispatch(String($0)) }
+        eng.dispatch("AC")
+        XCTAssertEqual(eng.displayText, "0")
+        XCTAssertEqual(eng.expression, "")
+    }
+
+    func testDEL_removesLastChar() {
+        ["1", "2", "3", "DEL"].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.expression, "12")
+    }
+
+    func testDEL_afterResult_clearsToZero() {
+        "5+5=".forEach { eng.dispatch(String($0)) }
+        eng.dispatch("DEL")
+        XCTAssertEqual(eng.displayText, "0")
+    }
+
+    // MARK: - Sign / percent
+
+    func testToggleSign() {
+        eng.dispatch("5")
+        eng.dispatch("±")
+        XCTAssertEqual(eng.expression, "-5")
+        eng.dispatch("±")
+        XCTAssertEqual(eng.expression, "5")
+    }
+
+    func testPercent() {
+        eng.dispatch("2")
+        eng.dispatch("0")
+        eng.dispatch("0")
+        eng.dispatch("%")
+        XCTAssertEqual(eng.displayText, "2")
+    }
+
+    // MARK: - Parentheses
+
+    func testParentheses() {
+        ["(", "2", "+", "3", ")", "×", "4", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "20")
+    }
+
+    // MARK: - Unary operations
+
+    // Natural display: function wraps argument — type fn, arg, ), =
+
+    func testSquareRoot() {
+        ["√", "9", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "3")
+    }
+
+    func testSquareRoot_negativeIsError() {
+        ["√", "-", "4", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    func testSquare() {
+        eng.dispatch("3"); eng.dispatch("x²")
+        XCTAssertEqual(eng.displayText, "9")
+    }
+
+    func testCube() {
+        eng.dispatch("2"); eng.dispatch("x³")
+        XCTAssertEqual(eng.displayText, "8")
+    }
+
+    func testCubeRoot() {
+        ["³√", "8", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-10)
+    }
+
+    func testReciprocal() {
+        eng.dispatch("4"); eng.dispatch("1/x")
+        XCTAssertEqual(eng.displayText, "0.25")
+    }
+
+    func testReciprocal_zeroIsError() {
+        eng.dispatch("0"); eng.dispatch("1/x")
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    // MARK: - Trig (degrees)
+
+    func testSin30() {
+        ["sin", "3", "0", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 0.5, accuracy: 1e-10)
+    }
+
+    func testCos60() {
+        ["cos", "6", "0", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 0.5, accuracy: 1e-10)
+    }
+
+    func testTan45() {
+        ["tan", "4", "5", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-10)
+    }
+
+    func testTan90_isError() {
+        ["tan", "9", "0", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    func testArcSin() {
+        ["sin⁻¹", "0", ".", "5", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 30.0, accuracy: 1e-8)
+    }
+
+    func testArcSin_domainError() {
+        ["sin⁻¹", "2", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    func testArcCos() {
+        ["cos⁻¹", "0", ".", "5", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 60.0, accuracy: 1e-8)
+    }
+
+    func testArcTan() {
+        ["tan⁻¹", "1", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 45.0, accuracy: 1e-8)
+    }
+
+    // MARK: - Log / exp
+
+    func testLog100() {
+        ["log", "1", "0", "0", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-10)
+    }
+
+    func testLog_nonPositiveIsError() {
+        ["log", "0", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    func testLn() {
+        // ln(e) = 1 — uses the e constant token
+        ["ln", "e", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-5)
+    }
+
+    func testPow10() {
+        ["10^x", "2", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 100.0, accuracy: 1e-10)
+    }
+
+    func testExpX() {
+        ["e^x", "0", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-10)
+    }
+
+    // MARK: - π
+
+    func testPi() {
+        eng.dispatch("π")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, Double.pi, accuracy: 1e-10)
+    }
+
+    // MARK: - Tape
+
+    func testTapeGrowsOnEquals() {
+        "3+4=".forEach { eng.dispatch(String($0)) }
+        XCTAssertEqual(eng.tape.count, 1)
+        XCTAssertEqual(eng.tape[0].result, "7")
+    }
+
+    func testTapeGrowsOnUnary() {
+        ["√", "9", ")", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.tape.count, 1)
+    }
+
+    // MARK: - Decimal
+
+    func testDecimalInput() {
+        ["1", ".", "5", "+", "1", ".", "5", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "3")
+    }
+
+    func testDuplicateDecimalIgnored() {
+        ["1", ".", ".", "5"].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.expression, "1..5".replacingOccurrences(of: "..", with: "."))
+        // expression should be "1.5" (second dot ignored)
+        XCTAssertFalse(eng.expression.filter { $0 == "." }.count > 1)
+    }
+}
+
+final class HPFinancialEngineExtraTests: XCTestCase {
+
+    var fin: HPFinancialEngine!
+
+    override func setUp() { fin = HPFinancialEngine() }
+
+    func testLSTx_afterArithmetic() {
+        fin.stack[1] = 10; fin.stack[0] = 3
+        fin.dispatch("+")       // lastX = 3
+        fin.dispatch("LSTx")
+        XCTAssertEqual(fin.stack[0], 3.0, accuracy: 1e-10)
+    }
+
+    func testLSTx_after1overX() {
+        fin.stack[0] = 4
+        fin.dispatch("1/x")    // lastX = 4
+        fin.dispatch("LSTx")
+        XCTAssertEqual(fin.stack[0], 4.0, accuracy: 1e-10)
+    }
+
+    func testSTO_RCL() {
+        fin.stack[0] = 42
+        fin.dispatch("STO"); fin.dispatch("3")
+        fin.stack[0] = 0
+        fin.dispatch("RCL"); fin.dispatch("3")
+        XCTAssertEqual(fin.stack[0], 42.0, accuracy: 0)
+    }
+
+    func testCHS_togglesSign() {
+        fin.stack[0] = 5
+        fin.dispatch("CHS")
+        XCTAssertEqual(fin.stack[0], -5.0, accuracy: 0)
+        fin.dispatch("CHS")
+        XCTAssertEqual(fin.stack[0], 5.0, accuracy: 0)
+    }
+
+    func testRollDown() {
+        fin.stack = [1, 2, 3, 4]
+        fin.dispatch("R↓")
+        XCTAssertEqual(fin.stack[0], 2.0, accuracy: 0)
+        XCTAssertEqual(fin.stack[1], 3.0, accuracy: 0)
+        XCTAssertEqual(fin.stack[3], 1.0, accuracy: 0)
+    }
+
+    func testSwapXY() {
+        fin.stack[0] = 7; fin.stack[1] = 13
+        fin.dispatch("x≷y")
+        XCTAssertEqual(fin.stack[0], 13.0, accuracy: 0)
+        XCTAssertEqual(fin.stack[1], 7.0, accuracy: 0)
+    }
+
+    func testDivisionByZero() {
+        fin.stack[0] = 0
+        fin.dispatch("÷")
+        XCTAssertEqual(fin.displayText, "Error")
+    }
+
+    func testPercentCalc() {
+        fin.stack[1] = 500; fin.stack[0] = 20
+        fin.dispatch("%")
+        XCTAssertEqual(fin.stack[0], 100.0, accuracy: 1e-10)
+    }
+
+    func testDeltaPercent() {
+        fin.stack[1] = 80; fin.stack[0] = 100
+        fin.dispatch("Δ%")
+        XCTAssertEqual(fin.stack[0], 25.0, accuracy: 1e-10)
     }
 }

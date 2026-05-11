@@ -49,8 +49,12 @@
 		A6CD10B16E1ABCDD42862541 /* ScientificCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1B0AC4CD64C58A630BCF2 /* ScientificCalculatorView.swift */; };
 		AA00BB001E512D9100442037 /* HPShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00BB011E512D9100442037 /* HPShared.swift */; };
 		AA00CC001E512D9100442037 /* HPFinancialEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00CC011E512D9100442037 /* HPFinancialEngine.swift */; };
+		FF00AA001E512D9100442037 /* HPDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00AA011E512D9100442037 /* HPDesign.swift */; };
 		AA00DD001E512D9100442037 /* HPScientificEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00DD011E512D9100442037 /* HPScientificEngine.swift */; };
 		AA00EE001E512D9100442037 /* TapeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00EE011E512D9100442037 /* TapeView.swift */; };
+		CE00EE001E512D9100442037 /* CalculatorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00EE011E512D9100442037 /* CalculatorEngine.swift */; };
+		CE00FF001E512D9100442037 /* CasioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00FF011E512D9100442037 /* CasioEngine.swift */; };
+		CE01AA001E512D9100442037 /* CasioCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE01AA011E512D9100442037 /* CasioCalculatorView.swift */; };
 		BB01FF001E512D9100442037 /* CalculatorPlusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -98,8 +102,12 @@
 		98A1B0AC4CD64C58A630BCF2 /* ScientificCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScientificCalculatorView.swift; sourceTree = "<group>"; };
 		AA00BB011E512D9100442037 /* HPShared.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HPShared.swift; sourceTree = "<group>"; };
 		AA00CC011E512D9100442037 /* HPFinancialEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HPFinancialEngine.swift; sourceTree = "<group>"; };
+		FF00AA011E512D9100442037 /* HPDesign.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HPDesign.swift; sourceTree = "<group>"; };
 		AA00DD011E512D9100442037 /* HPScientificEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HPScientificEngine.swift; sourceTree = "<group>"; };
 		AA00EE011E512D9100442037 /* TapeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TapeView.swift; sourceTree = "<group>"; };
+		CE00EE011E512D9100442037 /* CalculatorEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalculatorEngine.swift; sourceTree = "<group>"; };
+		CE00FF011E512D9100442037 /* CasioEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CasioEngine.swift; sourceTree = "<group>"; };
+		CE01AA011E512D9100442037 /* CasioCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CasioCalculatorView.swift; sourceTree = "<group>"; };
 		BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPlusTests.swift; sourceTree = "<group>"; };
 		BB03FF061E512D9100442037 /* CalculatorPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculatorPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StandardCalculatorView.swift; sourceTree = "<group>"; };
@@ -159,7 +167,11 @@
 				AA00BB011E512D9100442037 /* HPShared.swift */,
 				AA00CC011E512D9100442037 /* HPFinancialEngine.swift */,
 				AA00DD011E512D9100442037 /* HPScientificEngine.swift */,
+				FF00AA011E512D9100442037 /* HPDesign.swift */,
 				AA00EE011E512D9100442037 /* TapeView.swift */,
+				CE00EE011E512D9100442037 /* CalculatorEngine.swift */,
+				CE00FF011E512D9100442037 /* CasioEngine.swift */,
+				CE01AA011E512D9100442037 /* CasioCalculatorView.swift */,
 			);
 			path = CalculatorPlus;
 			sourceTree = "<group>";
@@ -344,7 +356,11 @@
 				AA00BB001E512D9100442037 /* HPShared.swift in Sources */,
 				AA00CC001E512D9100442037 /* HPFinancialEngine.swift in Sources */,
 				AA00DD001E512D9100442037 /* HPScientificEngine.swift in Sources */,
+				FF00AA001E512D9100442037 /* HPDesign.swift in Sources */,
 				AA00EE001E512D9100442037 /* TapeView.swift in Sources */,
+				CE00EE001E512D9100442037 /* CalculatorEngine.swift in Sources */,
+				CE00FF001E512D9100442037 /* CasioEngine.swift in Sources */,
+				CE01AA001E512D9100442037 /* CasioCalculatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -543,6 +559,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = DT58WA8N32;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalculatorPlusTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -557,6 +574,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = DT58WA8N32;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ridepro.CalculatorPlusTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

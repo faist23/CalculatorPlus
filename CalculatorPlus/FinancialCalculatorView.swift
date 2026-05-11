@@ -1,12 +1,13 @@
 import SwiftUI
 
-// MARK: - HP 12C Financial Calculator
+// MARK: - Financial Calculator (RPN)
 
 struct FinancialCalculatorView: View {
-    @Binding var useScientific: Bool
+    @Binding var active: CalculatorType
     let engine: HPFinancialEngine
 
     @State private var shiftMode: HPShiftMode = .none
+    @State private var showPicker = false
 
     // Rows 1 & 2: full 10-key rows
     let row1: [HPKey] = [
@@ -181,6 +182,9 @@ struct FinancialCalculatorView: View {
                 }
                 .frame(maxHeight: .infinity, alignment: .center)
             }
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: 0.5).onEnded { _ in showPicker = true }
+            )
         }
         .background(
             LinearGradient(
@@ -189,6 +193,12 @@ struct FinancialCalculatorView: View {
                 startPoint: .top, endPoint: .bottom
             ).ignoresSafeArea()
         )
+        .confirmationDialog("Switch Calculator", isPresented: $showPicker, titleVisibility: .visible) {
+            Button(CalculatorType.hp12c.rawValue) { active = .hp12c }
+            Button(CalculatorType.hp15c.rawValue) { active = .hp15c }
+            Button(CalculatorType.casio.rawValue)  { active = .casio }
+            Button("Cancel", role: .cancel) { }
+        }
     }
 
     // MARK: - LCD
@@ -217,6 +227,12 @@ struct FinancialCalculatorView: View {
                             .padding(.leading, 4)
                     }
                     Spacer()
+                    Button { showPicker = true } label: {
+                        Text(active.rawValue)
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundColor(.black.opacity(0.45))
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 8)
                 .padding(.top, 5)
@@ -270,7 +286,7 @@ struct FinancialCalculatorView: View {
 
         if label == "f" { shiftMode = shiftMode == .f ? .none : .f; return }
         if label == "g" { shiftMode = shiftMode == .g ? .none : .g; return }
-        if label == "SCI" { useScientific = true; UserDefaults.standard.set(true, forKey: "hpUseScientific"); return }
+        if label == "SCI" { active = .hp15c; return }
 
         // f + digit 0-9 → FIX n (HP-12C authentic behaviour)
         if shiftMode == .f, label.count == 1, let n = Int(label) {

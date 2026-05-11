@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 @Observable
-final class HPScientificEngine {
+final class HPScientificEngine: CalculatorEngine {
 
     // MARK: - RPN Stack  (X = index 0, Y = 1, Z = 2, T = 3)
     var stack: [Double] = [0, 0, 0, 0]

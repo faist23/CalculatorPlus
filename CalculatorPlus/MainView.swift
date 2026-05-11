@@ -1,20 +1,22 @@
 import SwiftUI
 
 struct MainView: View {
-    @State private var useScientific: Bool = UserDefaults.standard.bool(forKey: "hpUseScientific")
-    @State private var financialEngine = HPFinancialEngine()
-    @State private var scientificEngine = HPScientificEngine()
+    @State private var router = CalculatorRouter()
 
     var body: some View {
+        @Bindable var r = router
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
             Group {
-                if isLandscape {
-                    if useScientific {
-                        ScientificCalculatorView(useScientific: $useScientific, engine: scientificEngine)
+                if router.active == .casio {
+                    CasioCalculatorView(active: $r.active, engine: router.casio)
+                        .transition(.opacity)
+                } else if isLandscape {
+                    if router.active == .hp15c {
+                        ScientificCalculatorView(active: $r.active, engine: router.hp15c)
                             .transition(.opacity)
                     } else {
-                        FinancialCalculatorView(useScientific: $useScientific, engine: financialEngine)
+                        FinancialCalculatorView(active: $r.active, engine: router.hp12c)
                             .transition(.opacity)
                     }
                 } else {
@@ -24,6 +26,7 @@ struct MainView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(.easeInOut(duration: 0.25), value: isLandscape)
+            .animation(.easeInOut(duration: 0.25), value: router.active)
         }
     }
 }
