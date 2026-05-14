@@ -623,6 +623,540 @@ final class CasioEngineTests: XCTestCase {
     }
 }
 
+// MARK: - CasioEngine advanced feature tests
+
+final class CasioEngineAdvancedTests: XCTestCase {
+
+    var eng: CasioEngine!
+
+    override func setUp() { eng = CasioEngine() }
+
+    // Helper: dispatch each character of a string
+    private func type(_ s: String) { s.forEach { eng.dispatch(String($0)) } }
+
+    // MARK: - CALC (variable substitution + evaluate)
+
+    func testCALC_singleVar() {
+        // Build "X+1", CALC, enter X=3 → result 4
+        eng.dispatch("X"); eng.dispatch("+"); eng.dispatch("1")
+        eng.dispatch("CALC")
+        XCTAssertEqual(eng.displayText, "X=?")
+        eng.dispatch("3"); eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "4")
+    }
+
+    func testCALC_twoVars() {
+        // Build "X+A", CALC, enter X=2, A=3 → result 5
+        eng.dispatch("X"); eng.dispatch("+"); eng.dispatch("A")
+        eng.dispatch("CALC")
+        eng.dispatch("2"); eng.dispatch("=")   // X=2
+        eng.dispatch("3"); eng.dispatch("=")   // A=3
+        XCTAssertEqual(eng.displayText, "5")
+    }
+
+    func testCALC_restoresFormula() {
+        // After CALC, expression reverts to formula so user can re-run
+        eng.dispatch("X"); eng.dispatch("+"); eng.dispatch("1")
+        eng.dispatch("CALC"); eng.dispatch("5"); eng.dispatch("=")
+        XCTAssertEqual(eng.expression, "X+1")
+    }
+
+    func testCALC_noVars_evaluatesImmediately() {
+        // Expression without variables → CALC evaluates immediately without prompting
+        eng.dispatch("2"); eng.dispatch("+"); eng.dispatch("3")
+        eng.dispatch("CALC")
+        XCTAssertEqual(eng.displayText, "5")
+    }
+
+    // MARK: - SOLVE (Newton-Raphson root finder)
+
+    func testSOLVE_linear() {
+        // X-5=0 → root at X=5, guess 0
+        eng.dispatch("X"); eng.dispatch("-"); eng.dispatch("5")
+        eng.dispatch("SOLVE")
+        eng.dispatch("0"); eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 5.0, accuracy: 1e-8)
+    }
+
+    func testSOLVE_quadraticPositiveRoot() {
+        // X×X-4=0 → root at X=2, guess from 1
+        eng.dispatch("X"); eng.dispatch("×"); eng.dispatch("X")
+        eng.dispatch("-"); eng.dispatch("4")
+        eng.dispatch("SOLVE")
+        eng.dispatch("1"); eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-6)
+    }
+
+    func testSOLVE_setsVarX() {
+        // After SOLVE, vars["X"] holds the root
+        eng.dispatch("X"); eng.dispatch("-"); eng.dispatch("7")
+        eng.dispatch("SOLVE"); eng.dispatch("0"); eng.dispatch("=")
+        XCTAssertEqual(eng.vars["X"] ?? 0, 7.0, accuracy: 1e-8)
+    }
+
+    // MARK: - ∫dx (numerical integration via Simpson's rule)
+
+    func testIntegral_X_zero_to_one() {
+        // ∫X dx from 0 to 1 = 0.5
+        eng.dispatch("X"); eng.dispatch("∫")
+        eng.dispatch("0"); eng.dispatch("=")   // lower = 0
+        eng.dispatch("1"); eng.dispatch("=")   // upper = 1
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 0.5, accuracy: 1e-5)
+    }
+
+    func testIntegral_defaultFExpr_isX() {
+        // Fresh engine: expression empty → default f(X) = X; ∫X dx [0..2] = 2
+        eng.dispatch("∫")
+        eng.dispatch("0"); eng.dispatch("=")
+        eng.dispatch("2"); eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-4)
+    }
+
+    func testIntegral_AC_cancels() {
+        eng.dispatch("X"); eng.dispatch("∫")
+        eng.dispatch("AC")
+        XCTAssertEqual(eng.intPhase, .idle)
+    }
+
+    // MARK: - d/dx (numerical differentiation)
+
+    func testDerivative_identity_is_one() {
+        // f(X)=X → d/dx = 1 everywhere
+        eng.dispatch("d/dx")                   // expression empty → f = X
+        eng.dispatch("5"); eng.dispatch("=")   // evaluate at X=5
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-6)
+    }
+
+    func testDerivative_XSquared_at3_is6() {
+        // f(X) = X^2 → d/dx at 3 = 6
+        eng.dispatch("X"); eng.dispatch("^"); eng.dispatch("2")
+        eng.dispatch("d/dx")
+        eng.dispatch("3"); eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 6.0, accuracy: 1e-4)
+    }
+
+    func testDerivative_AC_cancels() {
+        eng.dispatch("d/dx")
+        eng.dispatch("AC")
+        XCTAssertEqual(eng.diffPhase, .idle)
+    }
+
+    // MARK: - BASE-N logic operators
+
+    private func enterBaseN() { eng.mode = .baseN }   // resets to dec radix
+
+    func testBaseN_AND() {
+        // 10 AND 12 = 8  (1010 & 1100 = 1000)
+        enterBaseN()
+        eng.dispatch("1"); eng.dispatch("0")
+        eng.dispatch("AND")
+        eng.dispatch("1"); eng.dispatch("2")
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "8")
+    }
+
+    func testBaseN_OR() {
+        // 10 OR 12 = 14  (1010 | 1100 = 1110)
+        enterBaseN()
+        eng.dispatch("1"); eng.dispatch("0")
+        eng.dispatch("OR")
+        eng.dispatch("1"); eng.dispatch("2")
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "14")
+    }
+
+    func testBaseN_XOR() {
+        // 10 XOR 12 = 6  (1010 ^ 1100 = 0110)
+        enterBaseN()
+        eng.dispatch("1"); eng.dispatch("0")
+        eng.dispatch("XOR")
+        eng.dispatch("1"); eng.dispatch("2")
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "6")
+    }
+
+    func testBaseN_XNOR() {
+        // 10 XNOR 12 = ~6 & 0xFFFFFFFF = 0xFFFFFFF9 = 4294967289
+        enterBaseN()
+        eng.dispatch("1"); eng.dispatch("0")
+        eng.dispatch("XNOR")
+        eng.dispatch("1"); eng.dispatch("2")
+        eng.dispatch("=")
+        XCTAssertEqual(Int(eng.displayText) ?? 0, (~6) & 0xFFFF_FFFF)
+    }
+
+    func testBaseN_NOT_zero() {
+        // NOT 0 = 0xFFFFFFFF = 4294967295
+        enterBaseN()
+        eng.dispatch("NOT")
+        XCTAssertEqual(Int(eng.displayText) ?? 0, 0xFFFF_FFFF)
+    }
+
+    func testBaseN_NEG() {
+        // NEG 1 = (-1) & 0xFFFFFFFF = 4294967295
+        enterBaseN()
+        eng.dispatch("1")
+        eng.dispatch("NEG")
+        XCTAssertEqual(Int(eng.displayText) ?? 0, 0xFFFF_FFFF)
+    }
+
+    func testBaseN_radixSwitch_preservesValue() {
+        // Enter 10 in DEC, switch to HEX → "A"
+        enterBaseN()
+        eng.dispatch("1"); eng.dispatch("0")
+        eng.dispatch("HEX")
+        XCTAssertEqual(eng.displayText, "A")
+    }
+
+    func testBaseN_BIN_entry() {
+        // Switch to BIN, enter 1010, switch back to DEC → 10
+        enterBaseN()
+        eng.dispatch("BIN")
+        eng.dispatch("1"); eng.dispatch("0"); eng.dispatch("1"); eng.dispatch("0")
+        eng.dispatch("DEC")
+        XCTAssertEqual(eng.displayText, "10")
+    }
+
+    // MARK: - STAT result recall
+
+    func testStat_1var_n() {
+        eng.mode = .stat
+        eng.statData = [StatPoint(x: 1), StatPoint(x: 2), StatPoint(x: 3)]
+        eng.dispatch("n")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 3.0, accuracy: 0)
+    }
+
+    func testStat_1var_mean() {
+        eng.mode = .stat
+        eng.statData = [StatPoint(x: 1), StatPoint(x: 2), StatPoint(x: 3)]
+        eng.dispatch("x̄")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-10)
+    }
+
+    func testStat_1var_sumX() {
+        eng.mode = .stat
+        eng.statData = [StatPoint(x: 1), StatPoint(x: 2), StatPoint(x: 3)]
+        eng.dispatch("Σx")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 6.0, accuracy: 1e-10)
+    }
+
+    func testStat_1var_sumX2() {
+        eng.mode = .stat
+        eng.statData = [StatPoint(x: 1), StatPoint(x: 2), StatPoint(x: 3)]
+        eng.dispatch("Σx²")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 14.0, accuracy: 1e-10)
+    }
+
+    func testStat_1var_sigmaX() {
+        // σx = sqrt(Σx²/n - x̄²) = sqrt(14/3 - 4) = sqrt(2/3)
+        eng.mode = .stat
+        eng.statData = [StatPoint(x: 1), StatPoint(x: 2), StatPoint(x: 3)]
+        eng.dispatch("σx")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, sqrt(2.0/3.0), accuracy: 1e-8)
+    }
+
+    func testStat_1var_Sx() {
+        // Sx = sqrt((Σx² - n*x̄²)/(n-1)) = sqrt((14 - 12)/2) = 1.0
+        eng.mode = .stat
+        eng.statData = [StatPoint(x: 1), StatPoint(x: 2), StatPoint(x: 3)]
+        eng.dispatch("Sx")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-10)
+    }
+
+    func testStat_1var_noData_showsNoData() {
+        eng.mode = .stat
+        eng.dispatch("x̄")
+        XCTAssertEqual(eng.displayText, "No Data")
+    }
+
+    // MARK: - STAT regression — linear
+
+    func testStat_linReg_coefficients() {
+        // y = x + 1: (0,1),(1,2),(2,3) → a=1 (intercept), b=1 (slope), r=1
+        eng.mode = .stat; eng.statSubMode = .linReg
+        eng.statData = [
+            StatPoint(x: 0, y: 1),
+            StatPoint(x: 1, y: 2),
+            StatPoint(x: 2, y: 3),
+        ]
+        eng.dispatch("a"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-10)
+        eng.dispatch("b"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-10)
+        eng.dispatch("r"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-10)
+    }
+
+    // MARK: - STAT regression — quadratic
+
+    func testStat_quadReg_coefficients() {
+        // y = x²: (1,1),(2,4),(3,9) → a=0, b=0, c=1
+        eng.mode = .stat; eng.statSubMode = .quadReg
+        eng.statData = [
+            StatPoint(x: 1, y: 1),
+            StatPoint(x: 2, y: 4),
+            StatPoint(x: 3, y: 9),
+        ]
+        eng.dispatch("a"); XCTAssertEqual(Double(eng.displayText) ?? 0, 0.0, accuracy: 1e-8)
+        eng.dispatch("b"); XCTAssertEqual(Double(eng.displayText) ?? 0, 0.0, accuracy: 1e-8)
+        eng.dispatch("c"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-8)
+    }
+
+    // MARK: - STAT regression — logarithmic
+
+    func testStat_logReg_coefficients() {
+        // y = 2*ln(x): (1,0),(e,2),(e²,4) → a=0, b=2
+        eng.mode = .stat; eng.statSubMode = .logReg
+        eng.statData = [
+            StatPoint(x: 1.0,         y: 0.0),
+            StatPoint(x: exp(1.0),    y: 2.0),
+            StatPoint(x: exp(2.0),    y: 4.0),
+        ]
+        eng.dispatch("a"); XCTAssertEqual(Double(eng.displayText) ?? 0, 0.0, accuracy: 1e-8)
+        eng.dispatch("b"); XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-8)
+        eng.dispatch("r"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-8)
+    }
+
+    // MARK: - STAT regression — exponential
+
+    func testStat_expReg_coefficients() {
+        // y = e^x: (0,1),(1,e),(2,e²) → a=1, b=1
+        eng.mode = .stat; eng.statSubMode = .expReg
+        eng.statData = [
+            StatPoint(x: 0, y: 1.0),
+            StatPoint(x: 1, y: exp(1.0)),
+            StatPoint(x: 2, y: exp(2.0)),
+        ]
+        eng.dispatch("a"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-8)
+        eng.dispatch("b"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-8)
+    }
+
+    // MARK: - STAT regression — power
+
+    func testStat_powerReg_coefficients() {
+        // y = x³: (1,1),(2,8),(3,27) → a=1, b=3
+        eng.mode = .stat; eng.statSubMode = .powerReg
+        eng.statData = [
+            StatPoint(x: 1, y: 1),
+            StatPoint(x: 2, y: 8),
+            StatPoint(x: 3, y: 27),
+        ]
+        eng.dispatch("a"); XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0, accuracy: 1e-8)
+        eng.dispatch("b"); XCTAssertEqual(Double(eng.displayText) ?? 0, 3.0, accuracy: 1e-8)
+    }
+
+    // MARK: - STAT regression — inverse
+
+    func testStat_invReg_coefficients() {
+        // y = 2/x: (1,2),(2,1),(4,0.5) → a=0, b=2
+        eng.mode = .stat; eng.statSubMode = .invReg
+        eng.statData = [
+            StatPoint(x: 1, y: 2.0),
+            StatPoint(x: 2, y: 1.0),
+            StatPoint(x: 4, y: 0.5),
+        ]
+        eng.dispatch("a"); XCTAssertEqual(Double(eng.displayText) ?? 0, 0.0, accuracy: 1e-8)
+        eng.dispatch("b"); XCTAssertEqual(Double(eng.displayText) ?? 0, 2.0, accuracy: 1e-8)
+    }
+
+    // MARK: - FIX / SCI / ENG display formats
+
+    func testFIX_format() {
+        eng.dispatch("π"); eng.dispatch("=")
+        eng.dispatch("FIX:2")
+        XCTAssertEqual(eng.displayText, "3.14")
+    }
+
+    func testFIX_0_format() {
+        eng.dispatch("π"); eng.dispatch("=")
+        eng.dispatch("FIX:0")
+        XCTAssertEqual(eng.displayText, "3")
+    }
+
+    func testSCI_format() {
+        eng.dispatch("π"); eng.dispatch("=")
+        eng.dispatch("SCI:4")
+        // String(format: "%.4E", π) = "3.1416E+00"
+        XCTAssertEqual(eng.displayText, "3.1416E+00")
+    }
+
+    func testNORM_restores_after_FIX() {
+        eng.dispatch("π"); eng.dispatch("=")
+        eng.dispatch("FIX:2")
+        eng.dispatch("NORM")
+        // back to normal: trailing zeros stripped
+        XCTAssertFalse(eng.displayText.contains("E"))
+        XCTAssertTrue(eng.displayText.hasPrefix("3.14"))
+    }
+
+    func testFIX_persists_across_calculations() {
+        eng.dispatch("FIX:2")
+        ["1", "÷", "3", "="].forEach { eng.dispatch($0) }
+        XCTAssertEqual(eng.displayText, "0.33")
+    }
+
+    // MARK: - Statistical distributions
+
+    func testNormPD_standardNormal_at0() {
+        // NormPD(0, σ=1, μ=0) = 1/√(2π) ≈ 0.3989422804
+        eng.expression = "NormPD(0,1,0)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.0/sqrt(2 * .pi), accuracy: 1e-8)
+    }
+
+    func testNormCD_oneSD_interval() {
+        // NormCD(-1, 1, σ=1, μ=0) ≈ 0.6827 (68.27% CI)
+        eng.expression = "NormCD(-1,1,1,0)"
+        eng.dispatch("=")
+        let expected = 0.5 * (1 + erf(1.0/sqrt(2))) - 0.5 * (1 + erf(-1.0/sqrt(2)))
+        XCTAssertEqual(Double(eng.displayText) ?? 0, expected, accuracy: 1e-6)
+    }
+
+    func testInvNorm_median() {
+        // InvNorm(0.5, σ=1, μ=0) = 0 (median of standard normal)
+        eng.expression = "InvNorm(0.5,1,0)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 0.0, accuracy: 1e-6)
+    }
+
+    func testInvNorm_95thPercentile() {
+        // InvNorm(0.975, 1, 0) ≈ 1.96
+        eng.expression = "InvNorm(0.975,1,0)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 1.96, accuracy: 0.005)
+    }
+
+    func testBinomPD_fair_coin_2of4() {
+        // BinomPD(k=2, n=4, p=0.5) = C(4,2)/16 = 6/16 = 0.375
+        eng.expression = "BinomPD(2,4,0.5)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 0.375, accuracy: 1e-10)
+    }
+
+    func testBinomCD_cumulative() {
+        // BinomCD(k=2, n=4, p=0.5) = P(0)+P(1)+P(2) = 0.0625+0.25+0.375 = 0.6875
+        eng.expression = "BinomCD(2,4,0.5)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 0.6875, accuracy: 1e-10)
+    }
+
+    func testPoissonPD_k0_lambda1() {
+        // PoissonPD(k=0, λ=1) = e^(-1) ≈ 0.3679
+        eng.expression = "PoissonPD(0,1)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, exp(-1.0), accuracy: 1e-10)
+    }
+
+    func testPoissonCD_cumulative() {
+        // PoissonCD(k=1, λ=1) = e^-1 + e^-1 = 2e^-1 ≈ 0.7358
+        eng.expression = "PoissonCD(1,1)"
+        eng.dispatch("=")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 2 * exp(-1.0), accuracy: 1e-10)
+    }
+
+    // MARK: - Domain error / edge cases for distributions
+
+    func testNormPD_zeroSigma_isError() {
+        eng.expression = "NormPD(0,0,0)"
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    func testInvNorm_outOfRange_isError() {
+        // p must be in (0,1); p=0 is undefined
+        eng.expression = "InvNorm(0,1,0)"
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    func testBinomPD_invalidProbability_isError() {
+        eng.expression = "BinomPD(2,4,1.5)"
+        eng.dispatch("=")
+        XCTAssertEqual(eng.displayText, "Math ERROR")
+    }
+
+    // MARK: - CMPLX polar display
+
+    private func enterCmplx() { eng.mode = .cmplx }
+
+    private func addComplex(re: String, im: String) {
+        // Dispatch digit strings into the CMPLX entry phase
+        re.forEach { eng.dispatch(String($0)) }
+        eng.dispatch("i")
+        im.forEach { eng.dispatch(String($0)) }
+    }
+
+    func testCmplx_rect_defaultFormat() {
+        // 3 + 4i should display as "3+4i" in rectangular mode
+        enterCmplx()
+        addComplex(re: "3", im: "4")
+        eng.dispatch("+")
+        addComplex(re: "0", im: "0")
+        eng.dispatch("=")
+        XCTAssertFalse(eng.cmplxPolar)
+        XCTAssertEqual(eng.displayText, "3+4i")
+    }
+
+    func testCmplx_polar_magnitude() {
+        // 3+4i → r=5
+        enterCmplx()
+        addComplex(re: "3", im: "4")
+        eng.dispatch("+")
+        addComplex(re: "0", im: "0")
+        eng.dispatch("=")
+        eng.dispatch("POLAR")
+        XCTAssertTrue(eng.cmplxPolar)
+        // r = 5, θ = atan2(4,3) in degrees ≈ 53.13°
+        XCTAssertTrue(eng.displayText.hasPrefix("5∠"), "Expected polar format, got \(eng.displayText)")
+    }
+
+    func testCmplx_polar_angle_degrees() {
+        // 0+1i in DEG → 1∠90
+        enterCmplx()
+        addComplex(re: "0", im: "1")
+        eng.dispatch("+"); addComplex(re: "0", im: "0"); eng.dispatch("=")
+        eng.dispatch("POLAR")
+        XCTAssertEqual(eng.displayText, "1∠90")
+    }
+
+    func testCmplx_polar_toggle_back_to_rect() {
+        enterCmplx()
+        addComplex(re: "3", im: "4")
+        eng.dispatch("+"); addComplex(re: "0", im: "0"); eng.dispatch("=")
+        eng.dispatch("POLAR")
+        eng.dispatch("POLAR")   // toggle back
+        XCTAssertFalse(eng.cmplxPolar)
+        XCTAssertEqual(eng.displayText, "3+4i")
+    }
+
+    func testCmplx_polar_real_result() {
+        // 1+0i in polar → "1∠0" (pure real, angle = 0)
+        enterCmplx()
+        addComplex(re: "1", im: "0")
+        eng.dispatch("+"); addComplex(re: "0", im: "0"); eng.dispatch("=")
+        eng.dispatch("POLAR")
+        XCTAssertEqual(eng.displayText, "1∠0")
+    }
+
+    func testCmplx_AC_resets_polar_mode() {
+        enterCmplx()
+        addComplex(re: "3", im: "4")
+        eng.dispatch("+"); addComplex(re: "0", im: "0"); eng.dispatch("=")
+        eng.dispatch("POLAR")
+        eng.dispatch("AC")   // resetCmplx clears polar
+        XCTAssertFalse(eng.cmplxPolar)
+    }
+
+    func testCmplx_Re_Im_always_rectangular() {
+        // Re/Im always return the rectangular component regardless of polar mode
+        enterCmplx()
+        addComplex(re: "3", im: "4")
+        eng.dispatch("+"); addComplex(re: "0", im: "0"); eng.dispatch("=")
+        eng.dispatch("POLAR")
+        eng.dispatch("Re")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 3.0, accuracy: 1e-10)
+        eng.dispatch("Im")
+        XCTAssertEqual(Double(eng.displayText) ?? 0, 4.0, accuracy: 1e-10)
+    }
+}
+
 final class HPFinancialEngineExtraTests: XCTestCase {
 
     var fin: HPFinancialEngine!

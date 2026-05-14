@@ -17,10 +17,16 @@ struct CasioCalculatorView: View {
 
     @State private var shiftOn        = false
     @State private var alphaOn        = false
-    @State private var showModePicker = false
-    @State private var showCalcPicker = false
-    @State private var showEqnPicker  = false
-    @State private var showStatPicker = false
+    @State private var showModePicker   = false
+    @State private var showCalcPicker   = false
+    @State private var showEqnPicker    = false
+    @State private var showStatPicker   = false
+    @State private var showConst        = false
+    @State private var showConv         = false
+    @State private var showFormatPicker = false
+    @State private var showDigitPicker  = false
+    @State private var pendingFmt       = ""
+    @State private var showDist         = false
 
     // MARK: Key grid — 5 cols × 9 rows (modifier + 8 function/number rows)
 
@@ -43,20 +49,21 @@ struct CasioCalculatorView: View {
     ]
     private let row3: [CKey] = [
         CKey("HYP",  s: "HYP"),
+        CKey("CALC", s: "SOLVE"),
+        CKey("∫",    s: "d/dx"),
         CKey("nCr",  s: "nPr"),
         CKey("x!",   s: "Ran#"),
-        CKey("GCD",  s: "LCM"),
-        CKey("%",    s: "Int"),
     ]
     private let row4: [CKey] = [
         CKey("STO",  s: "RCL"),
         CKey("RCL",  s: "STO"),
-        CKey("Ans",  s: "DRG"),
+        CKey("Ans",  s: "DIST"),
         CKey("π",    s: "e"),
         CKey("M+",   s: "M-"),
     ]
     private let row5: [CKey] = [
-        CKey("7"), CKey("8"), CKey("9"), CKey("÷", s: "log_b"), CKey("×", s: "Rem"),
+        CKey("7", s: "CONST"), CKey("8", s: "CONV"), CKey("9"),
+        CKey("÷", s: "log_b"), CKey("×", s: "Rem"),
     ]
     private let row6: [CKey] = [
         CKey("4"), CKey("5"), CKey("6"), CKey("-"), CKey("+"),
@@ -71,7 +78,7 @@ struct CasioCalculatorView: View {
     // MARK: Mode-specific function rows (rows 1-4)
 
     private var cmplxFnRows: [[CKey]] { [
-        [CKey("i"), CKey("Re"), CKey("Im"), CKey("|z|"), CKey("Arg")],
+        [CKey("i"), CKey("Re"), CKey("Im"), CKey("|z|"), CKey("Arg", s: "POLAR")],
         [CKey("Conj"), CKey("+"), CKey("-"), CKey("×"), CKey("÷")],
         [CKey("sin", s:"sin⁻¹"), CKey("cos", s:"cos⁻¹"), CKey("tan", s:"tan⁻¹"),
          CKey("log", s:"10^x"), CKey("ln", s:"e^x")],
@@ -104,12 +111,38 @@ struct CasioCalculatorView: View {
          CKey("DEL"),          CKey("=")],
     ] }
 
+    private var stat1VarFnRows: [[CKey]] { [
+        [CKey("n"),    CKey("x̄"),   CKey("Σx"),   CKey("Σx²"),  CKey("σx")],
+        [CKey("Sx"),   CKey("minX"), CKey("maxX"), CKey("DT"),   CKey("CL")],
+        [CKey("STO"),  CKey("RCL"),  CKey("Ans"),  CKey("π"),    CKey("M+")],
+        [CKey("HYP"),  CKey("CALC"), CKey("∫"),    CKey("nCr"),  CKey("x!")],
+    ] }
+
+    private var statRegFnRows: [[CKey]] {
+        let lastCoeff = engine.statSubMode == .quadReg ? CKey("c") : CKey("r")
+        return [
+            [CKey("n"),   CKey("x̄"),   CKey("Σx"),  CKey("Σx²"),  CKey("Σxy")],
+            [CKey("ȳ"),   CKey("Σy"),  CKey("Σy²"), CKey("DT"),   CKey("CL")],
+            [CKey("σx"),  CKey("Sx"),  CKey("a"),   CKey("b"),    lastCoeff],
+            [CKey("STO"), CKey("RCL"), CKey("Ans"), CKey("π"),    CKey("M+")],
+        ]
+    }
+
+    private var baseNFnRows: [[CKey]] { [
+        [CKey("BIN"), CKey("OCT"), CKey("DEC"), CKey("HEX"), CKey("NEG")],
+        [CKey("AND"), CKey("OR"),  CKey("XOR"), CKey("NOT"), CKey("XNOR")],
+        [CKey("A"),   CKey("B"),   CKey("C"),   CKey("D"),   CKey("E")],
+        [CKey("F"),   CKey("("),   CKey(")"),   CKey("DEL"), CKey("AC")],
+    ] }
+
     private var activeFnRows: [[CKey]] {
         switch engine.mode {
         case .cmplx:  return cmplxFnRows
         case .matrix: return matFnRows
         case .vector: return vctFnRows
         case .table:  return tableFnRows
+        case .baseN:  return baseNFnRows
+        case .stat:   return engine.statSubMode == .oneVar ? stat1VarFnRows : statRegFnRows
         default:      return [row1, row2, row3, row4]
         }
     }
@@ -189,13 +222,50 @@ struct CasioCalculatorView: View {
             Button(CalculatorType.casio.rawValue)  { active = .casio }
             Button("Cancel", role: .cancel) {}
         }
+        // Display format — SHIFT+MODE
+        .confirmationDialog("Display Format", isPresented: $showFormatPicker, titleVisibility: .visible) {
+            Button("FIX — fixed decimal") { pendingFmt = "FIX"; showDigitPicker = true }
+            Button("SCI — scientific")    { pendingFmt = "SCI"; showDigitPicker = true }
+            Button("ENG — engineering")   { pendingFmt = "ENG"; showDigitPicker = true }
+            Button("NORM — normal")       { engine.dispatch("NORM") }
+            Button("Cancel", role: .cancel) {}
+        }
+        // Decimal places selector (0–9)
+        .confirmationDialog("Decimal Places", isPresented: $showDigitPicker, titleVisibility: .visible) {
+            ForEach(0...9, id: \.self) { n in
+                Button("\(n)") { engine.dispatch("\(pendingFmt):\(n)") }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        // Physical constants catalog
+        .sheet(isPresented: $showConst) {
+            ConstantPickerSheet { idx in
+                engine.dispatch("CONST:\(idx)")
+                showConst = false
+            }
+        }
+        // Unit conversions catalog
+        .sheet(isPresented: $showConv) {
+            ConversionPickerSheet { idx in
+                engine.dispatch("CONV:\(idx)")
+                showConv = false
+            }
+        }
+        // Statistical distributions
+        .sheet(isPresented: $showDist) {
+            DistPickerSheet { key in
+                engine.dispatch(key)
+                showDist = false
+            }
+        }
     }
 
     // MARK: - LCD
 
     @ViewBuilder
     private var lcdDisplay: some View {
-        let hasTape = !engine.tape.isEmpty
+        let isTableView = engine.mode == .table && engine.tablePhase == .view
+        let hasTape = !engine.tape.isEmpty && !isTableView
         ZStack {
             RoundedRectangle(cornerRadius: 6)
                 .fill(Color(red: 0.79, green: 0.84, blue: 0.74))
@@ -208,6 +278,9 @@ struct CasioCalculatorView: View {
                     if engine.hypActive { ann("HYP", Color(red:0.85,green:0.60,blue:0.04)) }
                     if engine.stoActive { ann("STO", Color(red:0.15,green:0.52,blue:0.22)) }
                     if engine.rclActive { ann("RCL", Color(red:0.15,green:0.52,blue:0.22)) }
+                    if engine.mode == .cmplx && engine.cmplxPolar {
+                        ann("POL", Color(red:0.20,green:0.40,blue:0.90))
+                    }
                     if shiftOn { ann("SHIFT", Color(red:0.85,green:0.60,blue:0.04)) }
                     if alphaOn { ann("ALPHA", Color(red:0.72,green:0.12,blue:0.12)) }
                     Spacer()
@@ -219,37 +292,115 @@ struct CasioCalculatorView: View {
                 }
                 .padding(.horizontal, 8).padding(.top, 4).frame(height: 18)
 
-                if hasTape {
-                    TapeView(entries: engine.tape, onRecall: { engine.recallTapeValue($0) })
-                        .frame(maxHeight: 48)
-                }
+                if isTableView {
+                    tableGridView
+                } else {
+                    if hasTape {
+                        TapeView(entries: engine.tape, onRecall: { engine.recallTapeValue($0) })
+                            .frame(maxHeight: 48)
+                    }
 
-                Spacer(minLength: 2)
+                    Spacer(minLength: 2)
 
-                // Expression line (natural display — what the user typed)
-                HStack {
-                    Spacer()
-                    Text(engine.expression.isEmpty ? " " : engine.expression)
-                        .font(.custom("Courier", size: 15))
-                        .foregroundColor(.black.opacity(0.48))
-                        .lineLimit(1).minimumScaleFactor(0.5)
-                }
-                .padding(.horizontal, 8).frame(height: 20)
+                    // Expression line (natural display — what the user typed)
+                    HStack {
+                        Spacer()
+                        Text(engine.expression.isEmpty ? " " : engine.expression)
+                            .font(.custom("Courier", size: 15))
+                            .foregroundColor(.black.opacity(0.48))
+                            .lineLimit(1).minimumScaleFactor(0.5)
+                    }
+                    .padding(.horizontal, 8).frame(height: 20)
 
-                // Result line — smaller font for long mode-specific strings
-                let isBig = engine.displayText.count <= 12
-                HStack {
-                    Spacer()
-                    Text(engine.displayText)
-                        .font(.custom("Courier", size: isBig ? 34 : 18))
-                        .foregroundColor(.black.opacity(0.85))
-                        .lineLimit(2).minimumScaleFactor(0.35)
+                    // Result line — smaller font for long mode-specific strings
+                    let isBig = engine.displayText.count <= 12
+                    HStack {
+                        Spacer()
+                        Text(engine.displayText)
+                            .font(.custom("Courier", size: isBig ? 34 : 18))
+                            .foregroundColor(.black.opacity(0.85))
+                            .lineLimit(2).minimumScaleFactor(0.35)
+                    }
+                    .padding(.horizontal, 8).padding(.bottom, 4).frame(height: 42)
                 }
-                .padding(.horizontal, 8).padding(.bottom, 4).frame(height: 42)
             }
         }
-        .frame(height: hasTape ? 146 : 90)
+        .frame(height: isTableView ? 148 : (hasTape ? 146 : 90))
         .padding(.horizontal, 12).padding(.top, 6)
+    }
+
+    // Two-column table grid shown when TABLE mode reaches .view phase
+    @ViewBuilder
+    private var tableGridView: some View {
+        let data = engine.tableData
+        let sel  = engine.tableViewRow
+        let visibleCount = 4
+        // Window: keep selected row visible, centered if possible
+        let startIdx = max(0, min(sel - 1, data.count - visibleCount))
+
+        VStack(spacing: 0) {
+            // Column header
+            HStack(spacing: 0) {
+                Text("x")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Divider().frame(height: 14)
+                Text("f(x)")
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundColor(.black.opacity(0.55))
+            .frame(height: 16)
+            .padding(.horizontal, 8)
+
+            Divider().background(Color.black.opacity(0.20))
+
+            // Visible rows
+            ForEach(0..<visibleCount, id: \.self) { offset in
+                let idx = startIdx + offset
+                if idx < data.count {
+                    let row = data[idx]
+                    let isSelected = idx == sel
+                    HStack(spacing: 0) {
+                        Text(engine.fmt(row.x))
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.trailing, 6)
+                        Rectangle()
+                            .frame(width: 0.5)
+                            .foregroundColor(.black.opacity(0.20))
+                        Text(engine.fmt(row.fx))
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.trailing, 6)
+                    }
+                    .font(.custom("Courier", size: 12))
+                    .foregroundColor(isSelected ? .black : .black.opacity(0.65))
+                    .frame(height: 26)
+                    .background(isSelected
+                        ? Color.black.opacity(0.12)
+                        : Color.clear)
+                    .padding(.horizontal, 4)
+                } else {
+                    Color.clear.frame(height: 26)
+                }
+            }
+
+            // Scroll hint
+            HStack {
+                Image(systemName: "chevron.up")
+                    .opacity(sel > 0 ? 0.5 : 0.15)
+                Spacer()
+                Text("\(sel + 1)/\(data.count)")
+                    .font(.system(size: 9))
+                    .foregroundColor(.black.opacity(0.40))
+                Spacer()
+                Image(systemName: "chevron.down")
+                    .opacity(sel < data.count - 1 ? 0.5 : 0.15)
+            }
+            .font(.system(size: 9))
+            .foregroundColor(.black.opacity(0.45))
+            .padding(.horizontal, 12)
+            .frame(height: 14)
+        }
+        .padding(.top, 2)
     }
 
     private func ann(_ t: String, _ c: Color) -> some View {
@@ -267,9 +418,20 @@ struct CasioCalculatorView: View {
 
     // MARK: - Individual key
 
+    private func baseNKeyEnabled(_ k: CKey) -> Bool {
+        guard engine.mode == .baseN else { return true }
+        switch engine.baseRadix {
+        case .bin: return !["2","3","4","5","6","7","8","9","A","B","C","D","E","F"].contains(k.main)
+        case .oct: return !["8","9","A","B","C","D","E","F"].contains(k.main)
+        case .dec: return !["A","B","C","D","E","F"].contains(k.main)
+        case .hex: return true
+        }
+    }
+
     @ViewBuilder
     private func keyView(_ k: CKey, w: CGFloat, h: CGFloat) -> some View {
         let effective = resolveLabel(k)
+        let enabled   = baseNKeyEnabled(k)
         Button { tapped(k) } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 4)
@@ -303,8 +465,10 @@ struct CasioCalculatorView: View {
                 }
             }
             .frame(width: w, height: h)
+            .opacity(enabled ? 1 : 0.3)
         }
         .buttonStyle(CasioPressStyle())
+        .disabled(!enabled)
         .accessibilityLabel(effective)
     }
 
@@ -354,8 +518,10 @@ struct CasioCalculatorView: View {
         case "ALPHA":
             alphaOn.toggle(); shiftOn = false; return
         case "MODE":
+            let wasShift = shiftOn
             shiftOn = false; alphaOn = false
-            showModePicker = true; return
+            if wasShift { showFormatPicker = true } else { showModePicker = true }
+            return
         default: break
         }
 
@@ -369,6 +535,10 @@ struct CasioCalculatorView: View {
         }
         shiftOn = false; alphaOn = false
 
+        if effective == "CONST" { showConst = true; return }
+        if effective == "CONV"  { showConv  = true; return }
+        if effective == "DIST"  { showDist  = true; return }
+
         // Normalise labels to engine tokens
         switch effective {
         case "(-)":  engine.dispatch("(-)")
@@ -377,6 +547,139 @@ struct CasioCalculatorView: View {
         case "Σ−":   engine.dispatch("Σ−")
         case "Σ+":   engine.dispatch("Σ+")
         default:     engine.dispatch(effective)
+        }
+    }
+}
+
+// MARK: - Physical constants picker
+
+private struct ConstantPickerSheet: View {
+    let onSelect: (Int) -> Void
+    @Environment(\.dismiss) private var dismiss
+    private let grouped = Dictionary(grouping: CasioEngine.physConstants, by: \.category)
+    private let order   = ["Universal","Electromagnetic","Atomic & Nuclear","Physico-Chemical","Planck Units"]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(order, id: \.self) { cat in
+                    Section(cat) {
+                        ForEach(grouped[cat] ?? []) { c in
+                            Button {
+                                onSelect(c.id); dismiss()
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(c.name).font(.subheadline).foregroundStyle(.primary)
+                                        Text("\(c.symbol)  \(c.unit)")
+                                            .font(.caption).foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    Text(formatSci(c.value))
+                                        .font(.caption.monospaced()).foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Physical Constants")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func formatSci(_ v: Double) -> String {
+        let s = String(format: "%.4e", v)
+        return s
+    }
+}
+
+// MARK: - Unit conversion picker
+
+private struct ConversionPickerSheet: View {
+    let onSelect: (Int) -> Void
+    @Environment(\.dismiss) private var dismiss
+    private let grouped = Dictionary(grouping: CasioEngine.physConversions, by: \.category)
+    private let order   = ["Length","Area","Volume","Mass","Speed","Temperature","Energy","Pressure","Time"]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(order, id: \.self) { cat in
+                    Section(cat) {
+                        ForEach(grouped[cat] ?? []) { c in
+                            Button {
+                                onSelect(c.id); dismiss()
+                            } label: {
+                                Text(c.label)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Unit Conversions")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Distribution picker
+
+private struct DistPickerSheet: View {
+    let onSelect: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    private struct DistItem: Identifiable {
+        let id: String
+        let label: String
+        let detail: String
+    }
+
+    private let items: [DistItem] = [
+        DistItem(id: "NormPD",    label: "NormPD",    detail: "Normal probability density — NormPD(x, σ, μ)"),
+        DistItem(id: "NormCD",    label: "NormCD",    detail: "Normal cumulative — NormCD(lo, hi, σ, μ)"),
+        DistItem(id: "InvNorm",   label: "InvNorm",   detail: "Inverse normal — InvNorm(area, σ, μ)"),
+        DistItem(id: "BinomPD",   label: "BinomPD",   detail: "Binomial probability — BinomPD(k, n, p)"),
+        DistItem(id: "BinomCD",   label: "BinomCD",   detail: "Binomial cumulative — BinomCD(k, n, p)"),
+        DistItem(id: "PoissonPD", label: "PoissonPD", detail: "Poisson probability — PoissonPD(k, λ)"),
+        DistItem(id: "PoissonCD", label: "PoissonCD", detail: "Poisson cumulative — PoissonCD(k, λ)"),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            List(items) { item in
+                Button {
+                    onSelect(item.id); dismiss()
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.label)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.primary)
+                        Text(item.detail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .navigationTitle("Distributions")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
         }
     }
 }

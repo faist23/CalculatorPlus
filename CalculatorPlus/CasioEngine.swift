@@ -54,6 +54,124 @@ enum DisplayFmt: Equatable {
 
 struct StatPoint: Identifiable { var id = UUID(); var x: Double; var y: Double = 0; var freq: Double = 1 }
 
+// MARK: - Physical constants & unit conversions
+
+struct PhysicalConstant: Identifiable {
+    let id: Int; let symbol: String; let name: String
+    let value: Double; let unit: String; let category: String
+}
+
+struct CasioConversion: Identifiable {
+    let id: Int; let from: String; let to: String; let category: String
+    let factor: Double
+    let preAdd: Double   // add to input before multiplying (temp offset)
+    let postAdd: Double  // add after multiplying
+    func apply(_ x: Double) -> Double { (x + preAdd) * factor + postAdd }
+    var label: String { "\(from) → \(to)" }
+}
+
+extension CasioEngine {
+    static let physConstants: [PhysicalConstant] = [
+        // Universal
+        .init(id:0,  symbol:"c",   name:"Speed of light",        value:299_792_458,           unit:"m/s",        category:"Universal"),
+        .init(id:1,  symbol:"h",   name:"Planck constant",        value:6.62607015e-34,        unit:"J·s",        category:"Universal"),
+        .init(id:2,  symbol:"ℏ",   name:"Reduced Planck",         value:1.054571817e-34,       unit:"J·s",        category:"Universal"),
+        .init(id:3,  symbol:"NA",  name:"Avogadro constant",      value:6.02214076e23,         unit:"mol⁻¹",      category:"Universal"),
+        .init(id:4,  symbol:"k",   name:"Boltzmann constant",     value:1.380649e-23,          unit:"J/K",        category:"Universal"),
+        .init(id:5,  symbol:"R",   name:"Molar gas constant",     value:8.314462618,           unit:"J/(mol·K)",  category:"Universal"),
+        .init(id:6,  symbol:"σ",   name:"Stefan-Boltzmann",       value:5.670374419e-8,        unit:"W/(m²K⁴)",   category:"Universal"),
+        .init(id:7,  symbol:"G",   name:"Gravitational constant", value:6.67430e-11,           unit:"m³/(kg·s²)", category:"Universal"),
+        .init(id:8,  symbol:"g",   name:"Standard gravity",       value:9.80665,               unit:"m/s²",       category:"Universal"),
+        .init(id:9,  symbol:"atm", name:"Standard atmosphere",    value:101_325,               unit:"Pa",         category:"Universal"),
+        // Electromagnetic
+        .init(id:10, symbol:"e",   name:"Elementary charge",      value:1.602176634e-19,       unit:"C",          category:"Electromagnetic"),
+        .init(id:11, symbol:"μ0",  name:"Magnetic constant",      value:1.25663706212e-6,      unit:"N/A²",       category:"Electromagnetic"),
+        .init(id:12, symbol:"ε0",  name:"Electric constant",      value:8.8541878128e-12,      unit:"F/m",        category:"Electromagnetic"),
+        .init(id:13, symbol:"α",   name:"Fine-structure constant",value:7.2973525693e-3,       unit:"",           category:"Electromagnetic"),
+        .init(id:14, symbol:"F",   name:"Faraday constant",       value:96485.33212,           unit:"C/mol",      category:"Electromagnetic"),
+        .init(id:15, symbol:"G0",  name:"Conductance quantum",    value:7.748091729e-5,        unit:"S",          category:"Electromagnetic"),
+        .init(id:16, symbol:"Φ0",  name:"Magnetic flux quantum",  value:2.067833848e-15,       unit:"Wb",         category:"Electromagnetic"),
+        .init(id:17, symbol:"RK",  name:"Von Klitzing constant",  value:25812.80745,           unit:"Ω",          category:"Electromagnetic"),
+        .init(id:18, symbol:"KJ",  name:"Josephson constant",     value:4.835978484e14,        unit:"Hz/V",       category:"Electromagnetic"),
+        .init(id:19, symbol:"eV",  name:"Electron volt",          value:1.602176634e-19,       unit:"J",          category:"Electromagnetic"),
+        // Atomic & nuclear
+        .init(id:20, symbol:"me",  name:"Electron mass",          value:9.1093837015e-31,      unit:"kg",         category:"Atomic & Nuclear"),
+        .init(id:21, symbol:"mp",  name:"Proton mass",            value:1.67262192369e-27,     unit:"kg",         category:"Atomic & Nuclear"),
+        .init(id:22, symbol:"mn",  name:"Neutron mass",           value:1.67492749804e-27,     unit:"kg",         category:"Atomic & Nuclear"),
+        .init(id:23, symbol:"u",   name:"Atomic mass unit",       value:1.66053906660e-27,     unit:"kg",         category:"Atomic & Nuclear"),
+        .init(id:24, symbol:"mμ",  name:"Muon mass",              value:1.883531627e-28,       unit:"kg",         category:"Atomic & Nuclear"),
+        .init(id:25, symbol:"a0",  name:"Bohr radius",            value:5.29177210903e-11,     unit:"m",          category:"Atomic & Nuclear"),
+        .init(id:26, symbol:"re",  name:"Classical electron r.",  value:2.8179403227e-15,      unit:"m",          category:"Atomic & Nuclear"),
+        .init(id:27, symbol:"λC",  name:"Compton wavelength",     value:2.42631023867e-12,     unit:"m",          category:"Atomic & Nuclear"),
+        .init(id:28, symbol:"μB",  name:"Bohr magneton",          value:9.2740100783e-24,      unit:"J/T",        category:"Atomic & Nuclear"),
+        .init(id:29, symbol:"μN",  name:"Nuclear magneton",       value:5.0507837461e-27,      unit:"J/T",        category:"Atomic & Nuclear"),
+        // Physico-chemical
+        .init(id:30, symbol:"R∞",  name:"Rydberg constant",       value:10_973_731.568160,     unit:"m⁻¹",        category:"Physico-Chemical"),
+        .init(id:31, symbol:"Vm",  name:"Molar volume (STP)",     value:0.022413969,           unit:"m³/mol",     category:"Physico-Chemical"),
+        .init(id:32, symbol:"Eh",  name:"Hartree energy",         value:4.3597447222e-18,      unit:"J",          category:"Physico-Chemical"),
+        .init(id:33, symbol:"c1",  name:"1st radiation constant", value:3.741771852e-16,       unit:"W·m²",       category:"Physico-Chemical"),
+        .init(id:34, symbol:"c2",  name:"2nd radiation constant", value:1.438776877e-2,        unit:"m·K",        category:"Physico-Chemical"),
+        // Planck units
+        .init(id:35, symbol:"lP",  name:"Planck length",          value:1.616255e-35,          unit:"m",          category:"Planck Units"),
+        .init(id:36, symbol:"tP",  name:"Planck time",            value:5.391247e-44,          unit:"s",          category:"Planck Units"),
+        .init(id:37, symbol:"mP",  name:"Planck mass",            value:2.176434e-8,           unit:"kg",         category:"Planck Units"),
+        .init(id:38, symbol:"TP",  name:"Planck temperature",     value:1.416784e32,           unit:"K",          category:"Planck Units"),
+        .init(id:39, symbol:"Ep",  name:"Planck energy",          value:1.956082e9,            unit:"J",          category:"Planck Units"),
+    ]
+
+    static let physConversions: [CasioConversion] = [
+        // Length (8)
+        .init(id:0,  from:"in",    to:"cm",    category:"Length",      factor:2.54,              preAdd:0,   postAdd:0),
+        .init(id:1,  from:"cm",    to:"in",    category:"Length",      factor:1/2.54,            preAdd:0,   postAdd:0),
+        .init(id:2,  from:"ft",    to:"m",     category:"Length",      factor:0.3048,            preAdd:0,   postAdd:0),
+        .init(id:3,  from:"m",     to:"ft",    category:"Length",      factor:1/0.3048,          preAdd:0,   postAdd:0),
+        .init(id:4,  from:"yd",    to:"m",     category:"Length",      factor:0.9144,            preAdd:0,   postAdd:0),
+        .init(id:5,  from:"mi",    to:"km",    category:"Length",      factor:1.609344,          preAdd:0,   postAdd:0),
+        .init(id:6,  from:"km",    to:"mi",    category:"Length",      factor:1/1.609344,        preAdd:0,   postAdd:0),
+        .init(id:7,  from:"n mi",  to:"km",    category:"Length",      factor:1.852,             preAdd:0,   postAdd:0),
+        // Area (4)
+        .init(id:8,  from:"in²",   to:"cm²",   category:"Area",        factor:6.4516,            preAdd:0,   postAdd:0),
+        .init(id:9,  from:"ft²",   to:"m²",    category:"Area",        factor:0.09290304,        preAdd:0,   postAdd:0),
+        .init(id:10, from:"m²",    to:"ft²",   category:"Area",        factor:1/0.09290304,      preAdd:0,   postAdd:0),
+        .init(id:11, from:"acre",  to:"m²",    category:"Area",        factor:4046.8564224,      preAdd:0,   postAdd:0),
+        // Volume (6)
+        .init(id:12, from:"in³",   to:"cm³",   category:"Volume",      factor:16.387064,         preAdd:0,   postAdd:0),
+        .init(id:13, from:"cm³",   to:"in³",   category:"Volume",      factor:1/16.387064,       preAdd:0,   postAdd:0),
+        .init(id:14, from:"fl oz", to:"mL",    category:"Volume",      factor:29.5735296,        preAdd:0,   postAdd:0),
+        .init(id:15, from:"mL",    to:"fl oz", category:"Volume",      factor:1/29.5735296,      preAdd:0,   postAdd:0),
+        .init(id:16, from:"gal",   to:"L",     category:"Volume",      factor:3.785411784,       preAdd:0,   postAdd:0),
+        .init(id:17, from:"L",     to:"gal",   category:"Volume",      factor:1/3.785411784,     preAdd:0,   postAdd:0),
+        // Mass (6)
+        .init(id:18, from:"oz",    to:"g",     category:"Mass",        factor:28.349523125,      preAdd:0,   postAdd:0),
+        .init(id:19, from:"g",     to:"oz",    category:"Mass",        factor:1/28.349523125,    preAdd:0,   postAdd:0),
+        .init(id:20, from:"lb",    to:"kg",    category:"Mass",        factor:0.45359237,        preAdd:0,   postAdd:0),
+        .init(id:21, from:"kg",    to:"lb",    category:"Mass",        factor:1/0.45359237,      preAdd:0,   postAdd:0),
+        .init(id:22, from:"t",     to:"kg",    category:"Mass",        factor:1000,              preAdd:0,   postAdd:0),
+        .init(id:23, from:"st",    to:"kg",    category:"Mass",        factor:6.35029318,        preAdd:0,   postAdd:0),
+        // Speed (4)
+        .init(id:24, from:"km/h",  to:"m/s",   category:"Speed",       factor:1/3.6,             preAdd:0,   postAdd:0),
+        .init(id:25, from:"m/s",   to:"km/h",  category:"Speed",       factor:3.6,               preAdd:0,   postAdd:0),
+        .init(id:26, from:"mph",   to:"km/h",  category:"Speed",       factor:1.609344,          preAdd:0,   postAdd:0),
+        .init(id:27, from:"knot",  to:"km/h",  category:"Speed",       factor:1.852,             preAdd:0,   postAdd:0),
+        // Temperature (4)
+        .init(id:28, from:"°F",    to:"°C",    category:"Temperature", factor:5.0/9.0,           preAdd:-32, postAdd:0),
+        .init(id:29, from:"°C",    to:"°F",    category:"Temperature", factor:9.0/5.0,           preAdd:0,   postAdd:32),
+        .init(id:30, from:"°C",    to:"K",     category:"Temperature", factor:1,                 preAdd:0,   postAdd:273.15),
+        .init(id:31, from:"K",     to:"°C",    category:"Temperature", factor:1,                 preAdd:0,   postAdd:-273.15),
+        // Energy (4)
+        .init(id:32, from:"cal",   to:"J",     category:"Energy",      factor:4.184,             preAdd:0,   postAdd:0),
+        .init(id:33, from:"J",     to:"cal",   category:"Energy",      factor:1/4.184,           preAdd:0,   postAdd:0),
+        .init(id:34, from:"BTU",   to:"J",     category:"Energy",      factor:1055.05585,        preAdd:0,   postAdd:0),
+        .init(id:35, from:"kWh",   to:"J",     category:"Energy",      factor:3_600_000,         preAdd:0,   postAdd:0),
+        // Pressure (2)
+        .init(id:36, from:"atm",   to:"Pa",    category:"Pressure",    factor:101_325,           preAdd:0,   postAdd:0),
+        .init(id:37, from:"Pa",    to:"atm",   category:"Pressure",    factor:1/101_325,         preAdd:0,   postAdd:0),
+        // Time (2)
+        .init(id:38, from:"h",     to:"s",     category:"Time",        factor:3600,              preAdd:0,   postAdd:0),
+        .init(id:39, from:"day",   to:"h",     category:"Time",        factor:24,                preAdd:0,   postAdd:0),
+    ]
+}
+
 // MARK: - CMPLX types
 
 struct CasioComplex: Equatable {
@@ -84,9 +202,13 @@ struct CasioMatrix: Equatable {
     }
 }
 
-enum CasioMatPhase { case select, dimR, dimC, fill, ops, rhs, result }
-enum CasioVctPhase { case select, dim, fill, ops, rhs, result }
+enum CasioMatPhase   { case select, dimR, dimC, fill, ops, rhs, result }
+enum CasioVctPhase   { case select, dim, fill, ops, rhs, result }
 enum CasioTablePhase { case expr, start, end, step, view }
+enum CasioCalcPhase  { case idle, prompt }
+enum CasioSolvePhase { case idle, prompt }
+enum CasioIntPhase   { case idle, lower, upper }
+enum CasioDiffPhase  { case idle, xVal }
 
 // MARK: - CasioEngine
 
@@ -115,13 +237,17 @@ final class CasioEngine: CalculatorEngine {
             case .matrix: resetMatrix()
             case .vector: resetVector()
             case .table:  resetTable()
+            case .baseN:  resetBaseN()
             default: break
             }
         }
     }
     var angleUnit: AngleUnit = .deg { didSet { angleLabel = angleUnit.rawValue } }
     var displayFmt: DisplayFmt = .norm
-    var baseRadix: BaseRadix = .dec
+    var baseRadix:     BaseRadix = .dec
+    var baseNLhsVal:   Int = 0
+    var baseNOp:       String? = nil
+    var baseNInputStr: String = "0"
 
     // MARK: Memory
     var ans: Double = 0
@@ -150,6 +276,7 @@ final class CasioEngine: CalculatorEngine {
     var cmplxReStr: String = ""
     var cmplxImStr: String = ""
     var cmplxPhase: Int = 0          // 0 = entering Re, 1 = entering Im
+    var cmplxPolar: Bool = false     // false = a+bi, true = r∠θ
 
     // MARK: MATRIX
     var matrices: [String: CasioMatrix] = [
@@ -181,6 +308,23 @@ final class CasioEngine: CalculatorEngine {
     var tableData:    [(x: Double, fx: Double)] = []
     var tableInputStr: String = ""
     var tableViewRow: Int = 0
+
+    // MARK: CALC / SOLVE / ∫ / d∕dx
+    var calcPhase:       CasioCalcPhase  = .idle
+    var calcExprStr:     String = ""
+    var calcVarQueue:    [String] = []
+    var calcCurrentVar:  String = ""
+    var subInput:        String = ""        // numeric entry during CALC / SOLVE prompts
+
+    var solvePhase:      CasioSolvePhase = .idle
+    var solveExprStr:    String = ""
+
+    var intPhase:        CasioIntPhase   = .idle
+    var intFExpr:        String = ""
+    var intLowerExpr:    String = ""
+
+    var diffPhase:       CasioDiffPhase  = .idle
+    var diffFExpr:       String = ""
 
     // MARK: Private
     private var hasResult = false
@@ -223,6 +367,18 @@ final class CasioEngine: CalculatorEngine {
     // MARK: - COMP
 
     private func dispatchComp(_ key: String) {
+        // Sub-workflow phase interception (precedes main switch)
+        if calcPhase  == .prompt { handleCalcKey(key);  return }
+        if solvePhase == .prompt { handleSolveKey(key); return }
+        if intPhase  != .idle && (key == "=" || key == "AC") {
+            if key == "AC" { intPhase  = .idle; clearInput() } else { handleIntEquals()  }
+            return
+        }
+        if diffPhase != .idle && (key == "=" || key == "AC") {
+            if key == "AC" { diffPhase = .idle; clearInput() } else { handleDiffEquals() }
+            return
+        }
+
         switch key {
         case "0","1","2","3","4","5","6","7","8","9":
             if hasResult { expression = ""; hasResult = false }
@@ -355,11 +511,45 @@ final class CasioEngine: CalculatorEngine {
         case "°","°'\"":
             if !expression.isEmpty { expression += "°"; displayText = expression }
 
-        // Display format
-        case "FIX":   displayFmt = .fix(displayDecimalPlaces)
-        case "SCI":   displayFmt = .sci(displayDecimalPlaces)
-        case "ENG":   displayFmt = .eng(displayDecimalPlaces)
-        case "NORM":  displayFmt = .norm
+        // Display format  (bare keys use current displayDecimalPlaces)
+        case "FIX":  displayFmt = .fix(displayDecimalPlaces); refreshDisplay()
+        case "SCI":  displayFmt = .sci(displayDecimalPlaces); refreshDisplay()
+        case "ENG":  displayFmt = .eng(displayDecimalPlaces); refreshDisplay()
+        case "NORM": displayFmt = .norm;                      refreshDisplay()
+
+        // FIX:n / SCI:n / ENG:n sent by the format picker (n = decimal places)
+        case let k where k.hasPrefix("FIX:"):
+            if let d = Int(k.dropFirst(4)) { displayDecimalPlaces = d; displayFmt = .fix(d); refreshDisplay() }
+        case let k where k.hasPrefix("SCI:"):
+            if let d = Int(k.dropFirst(4)) { displayDecimalPlaces = d; displayFmt = .sci(d); refreshDisplay() }
+        case let k where k.hasPrefix("ENG:"):
+            if let d = Int(k.dropFirst(4)) { displayDecimalPlaces = d; displayFmt = .eng(d); refreshDisplay() }
+
+        case "CALC":   startCalc()
+        case "SOLVE":  startSolve()
+        case "∫","∫dx": startIntegral()
+        case "d/dx":   startDerivative()
+
+        case "NormPD","NormCD","InvNorm",
+             "BinomPD","BinomCD",
+             "PoissonPD","PoissonCD":
+            insertFn(key)
+
+        case let key where key.hasPrefix("CONST:"):
+            if let idx = Int(key.dropFirst(6)), idx < CasioEngine.physConstants.count {
+                let c = CasioEngine.physConstants[idx]
+                inject(c.symbol, displayValue: fmt(c.value))
+            }
+
+        case let key where key.hasPrefix("CONV:"):
+            if let idx = Int(key.dropFirst(5)), idx < CasioEngine.physConversions.count {
+                let conv = CasioEngine.physConversions[idx]
+                let v = Double(displayText) ?? ans
+                let result = conv.apply(v)
+                let r = fmt(result)
+                tape.append(TapeEntry(label: "\(fmt(v)) \(conv.from)→\(conv.to)", result: "\(r) \(conv.to)"))
+                ans = result; expression = fmt(result); displayText = r; hasResult = true
+            }
 
         default:
             // Variable names A-F X Y M
@@ -371,6 +561,11 @@ final class CasioEngine: CalculatorEngine {
     }
 
     // MARK: - Helpers
+
+    private func refreshDisplay() {
+        let v = Double(displayText) ?? ans
+        displayText = fmt(v)
+    }
 
     private func inject(_ label: String, displayValue: String) {
         if hasResult { expression = ""; hasResult = false }
@@ -413,6 +608,234 @@ final class CasioEngine: CalculatorEngine {
         let r = fmt(result)
         tape.append(TapeEntry(label: label, result: r))
         ans = result; expression = r; displayText = r; hasResult = true
+    }
+
+    // MARK: - CALC / SOLVE / ∫ / d∕dx  entry points
+
+    private func startCalc() {
+        guard !expression.isEmpty else { return }
+        calcExprStr = expression
+        calcVarQueue = extractVars(expression)
+        guard !calcVarQueue.isEmpty else { performEval(); return }
+        calcCurrentVar = calcVarQueue.removeFirst()
+        calcPhase = .prompt
+        subInput = ""
+        displayText = "\(calcCurrentVar)=?"
+    }
+
+    private func startSolve() {
+        guard !expression.isEmpty else { return }
+        solveExprStr = expression
+        solvePhase = .prompt
+        subInput = ""
+        expression = ""
+        displayText = "X=?(guess)"
+    }
+
+    private func startIntegral() {
+        intFExpr = expression.isEmpty ? "X" : expression
+        intPhase = .lower
+        expression = ""
+        displayText = "Lower?"
+        hasResult = true
+    }
+
+    private func startDerivative() {
+        diffFExpr = expression.isEmpty ? "X" : expression
+        diffPhase = .xVal
+        expression = ""
+        displayText = "X=?"
+        hasResult = true
+    }
+
+    // MARK: - CALC numeric prompt
+
+    private func handleCalcKey(_ key: String) {
+        switch key {
+        case "AC":
+            calcPhase = .idle; clearInput()
+        case "DEL","←":
+            if !subInput.isEmpty { subInput.removeLast() }
+            displayText = subInput.isEmpty ? "\(calcCurrentVar)=?" : subInput
+        case "=":
+            handleCalcEquals()
+        case "(-)","±":
+            if subInput.hasPrefix("-") { subInput.removeFirst() }
+            else { subInput = "-" + subInput }
+            displayText = subInput.isEmpty ? "\(calcCurrentVar)=?" : subInput
+        case "π":   subInput = fmt(.pi);  displayText = subInput
+        case "e":   subInput = fmt(M_E);  displayText = subInput
+        case "Ans": subInput = fmt(ans);  displayText = subInput
+        default:
+            if "0123456789".contains(key) {
+                subInput += key; displayText = subInput
+            } else if key == "." && !subInput.contains(".") {
+                subInput += "."; displayText = subInput
+            }
+        }
+    }
+
+    private func handleCalcEquals() {
+        vars[calcCurrentVar] = Double(subInput) ?? 0
+        subInput = ""
+        if calcVarQueue.isEmpty {
+            calcPhase = .idle
+            let formula = calcExprStr
+            expression = formula
+            performEval()
+            expression = formula    // restore so user can re-CALC with new values
+        } else {
+            calcCurrentVar = calcVarQueue.removeFirst()
+            displayText = "\(calcCurrentVar)=?"
+        }
+    }
+
+    // MARK: - SOLVE numeric prompt
+
+    private func handleSolveKey(_ key: String) {
+        switch key {
+        case "AC":
+            solvePhase = .idle; clearInput()
+        case "DEL","←":
+            if !subInput.isEmpty { subInput.removeLast() }
+            displayText = subInput.isEmpty ? "X=?(guess)" : subInput
+        case "=":
+            handleSolveEquals()
+        case "(-)","±":
+            if subInput.hasPrefix("-") { subInput.removeFirst() }
+            else { subInput = "-" + subInput }
+            displayText = subInput.isEmpty ? "X=?" : subInput
+        case "π":   subInput = fmt(.pi);  displayText = subInput
+        case "e":   subInput = fmt(M_E);  displayText = subInput
+        case "Ans": subInput = fmt(ans);  displayText = subInput
+        default:
+            if "0123456789".contains(key) {
+                subInput += key; displayText = subInput
+            } else if key == "." && !subInput.contains(".") {
+                subInput += "."; displayText = subInput
+            }
+        }
+    }
+
+    private func handleSolveEquals() {
+        solvePhase = .idle
+        let x0 = Double(subInput) ?? 0
+        subInput = ""
+        if let root = newtonSolve(expr: solveExprStr, x0: x0) {
+            vars["X"] = root
+            let r = fmt(root)
+            tape.append(TapeEntry(label: "SOLVE \(solveExprStr)=0", result: "X=\(r)"))
+            ans = root; expression = solveExprStr; displayText = r; hasResult = true
+        } else {
+            displayText = "No Solution"; expression = solveExprStr
+        }
+    }
+
+    // MARK: - ∫  phase handler
+
+    private func handleIntEquals() {
+        switch intPhase {
+        case .lower:
+            intLowerExpr = expression
+            intPhase = .upper
+            expression = ""
+            displayText = "Upper?"
+            hasResult = true
+        case .upper:
+            intPhase = .idle
+            guard let a = evaluate(intLowerExpr), let b = evaluate(expression) else {
+                displayText = "Math ERROR"; return
+            }
+            if let result = simpsonIntegral(expr: intFExpr, a: a, b: b) {
+                let r = fmt(result)
+                tape.append(TapeEntry(label: "∫(\(intFExpr))[\(fmt(a)),\(fmt(b))]", result: r))
+                ans = result; expression = r; displayText = r; hasResult = true
+            } else {
+                displayText = "Math ERROR"
+            }
+        case .idle: break
+        }
+    }
+
+    // MARK: - d∕dx  phase handler
+
+    private func handleDiffEquals() {
+        diffPhase = .idle
+        guard let x = evaluate(expression) else { displayText = "Math ERROR"; return }
+        if let result = centralDiff(expr: diffFExpr, x: x) {
+            let r = fmt(result)
+            tape.append(TapeEntry(label: "d/dx[\(diffFExpr)] x=\(fmt(x))", result: r))
+            ans = result; expression = r; displayText = r; hasResult = true
+        } else {
+            displayText = "Math ERROR"
+        }
+    }
+
+    // MARK: - Numerical computation
+
+    private func simpsonIntegral(expr: String, a: Double, b: Double, n: Int = 1000) -> Double? {
+        let steps = n % 2 == 0 ? n : n + 1
+        let h = (b - a) / Double(steps)
+        let savedX = vars["X"]
+        var sum = 0.0
+        for i in 0...steps {
+            let x = a + Double(i) * h
+            vars["X"] = x
+            guard let fx = evaluate(expr) else { vars["X"] = savedX; return nil }
+            let coeff: Double = (i == 0 || i == steps) ? 1 : (i % 2 == 1 ? 4 : 2)
+            sum += coeff * fx
+        }
+        vars["X"] = savedX
+        return (h / 3.0) * sum
+    }
+
+    private func centralDiff(expr: String, x: Double) -> Double? {
+        let h = max(1e-6, Swift.abs(x) * 1e-6)
+        let savedX = vars["X"]
+        vars["X"] = x + h
+        guard let fp = evaluate(expr) else { vars["X"] = savedX; return nil }
+        vars["X"] = x - h
+        guard let fm = evaluate(expr) else { vars["X"] = savedX; return nil }
+        vars["X"] = savedX
+        return (fp - fm) / (2.0 * h)
+    }
+
+    private func newtonSolve(expr: String, x0: Double) -> Double? {
+        let savedX = vars["X"]
+        var x = x0
+        let h = 1e-7
+        for _ in 0..<200 {
+            vars["X"] = x
+            guard let fx = evaluate(expr) else { vars["X"] = savedX; return nil }
+            if Swift.abs(fx) < 1e-12 { return x }
+            vars["X"] = x + h
+            guard let fxh = evaluate(expr) else { vars["X"] = savedX; return nil }
+            let df = (fxh - fx) / h
+            guard Swift.abs(df) > 1e-15 else { break }
+            let xn = x - fx / df
+            if Swift.abs(xn - x) < 1e-12 { return xn }
+            x = xn
+        }
+        vars["X"] = x
+        guard let fx = evaluate(expr) else { vars["X"] = savedX; return nil }
+        if Swift.abs(fx) < 1e-6 { return x }
+        vars["X"] = savedX; return nil
+    }
+
+    private func extractVars(_ expr: String) -> [String] {
+        // C and P are nCr/nPr binary operators, exclude from variable detection
+        let varNames = ["X","A","B","D","E","F","Y","M"]
+        var found: [String] = []
+        var seen  = Set<String>()
+        let chars = Array(expr)
+        for i in chars.indices {
+            let ch = String(chars[i])
+            guard varNames.contains(ch), !seen.contains(ch) else { continue }
+            let prevLower = i > 0 && chars[i-1].isLowercase
+            let nextLower = i < chars.count-1 && chars[i+1].isLowercase
+            if !prevLower && !nextLower { found.append(ch); seen.insert(ch) }
+        }
+        return found
     }
 
     // MARK: - CMPLX dispatch
@@ -462,7 +885,7 @@ final class CasioEngine: CalculatorEngine {
             }
             let label = cmplxFmt(lhs) + op + cmplxFmt(rhs)
             tape.append(TapeEntry(label: label, result: cmplxFmt(result)))
-            expression = label; displayText = cmplxFmt(result)
+            expression = label; displayText = cmplxDisplayFmt(result)
             cmplxAns = result; cmplxLhs = nil; cmplxOp = nil
             cmplxReStr = ""; cmplxImStr = ""; cmplxPhase = 0
         case "Re":
@@ -475,8 +898,11 @@ final class CasioEngine: CalculatorEngine {
             displayText = fmt(angleUnit.fromRadians(cmplxAns.argument))
             expression = "Arg(" + cmplxFmt(cmplxAns) + ")"
         case "Conj":
-            cmplxAns = cmplxAns.conjugate; displayText = cmplxFmt(cmplxAns)
-            expression = "Conj"
+            cmplxAns = cmplxAns.conjugate
+            displayText = cmplxDisplayFmt(cmplxAns); expression = "Conj"
+        case "POLAR":
+            cmplxPolar.toggle()
+            displayText = cmplxDisplayFmt(cmplxAns)
         default: break
         }
     }
@@ -502,9 +928,20 @@ final class CasioEngine: CalculatorEngine {
         return r + (z.im < 0 ? "-" : "+") + a + "i"
     }
 
+    // Formats z in the current display mode (rectangular or polar)
+    func cmplxDisplayFmt(_ z: CasioComplex) -> String {
+        if cmplxPolar {
+            let r = fmt(z.magnitude)
+            let theta = angleUnit.fromRadians(z.argument)
+            return "\(r)∠\(fmt(theta))"
+        }
+        return cmplxFmt(z)
+    }
+
     private func resetCmplx() {
         cmplxAns = CasioComplex(); cmplxLhs = nil; cmplxOp = nil
         cmplxReStr = ""; cmplxImStr = ""; cmplxPhase = 0
+        cmplxPolar = false
         expression = "CMPLX"; displayText = "0"
     }
 
@@ -945,8 +1382,6 @@ final class CasioEngine: CalculatorEngine {
         }
         guard !tableData.isEmpty else { displayText = "No data"; return }
         tablePhase = .view; tableViewRow = 0
-        // Populate tape with table rows
-        tape = tableData.map { TapeEntry(label: "x=\(fmt($0.x))", result: "f(x)=\(fmt($0.fx))") }
         showTableRow()
     }
 
@@ -1002,6 +1437,18 @@ final class CasioEngine: CalculatorEngine {
             commitStat()
         case "CL","Σ−":
             if !statData.isEmpty { statData.removeLast(); displayText = "n=\(statN)" }
+
+        // Stat result recall
+        case "n","x̄","Σx","Σx²","σx","Sx","minX","maxX",
+             "ȳ","Σy","Σy²","σy","Sy","Σxy","a","b","c","r":
+            if let v = statResult(key) {
+                let r = fmt(v)
+                tape.append(TapeEntry(label: key, result: r))
+                expression = key; displayText = r
+            } else {
+                displayText = "No Data"
+            }
+
         default:
             if "0123456789.".contains(key) || (key == "-" && statInputX.isEmpty && statInputPhase == 0) {
                 switch statInputPhase {
@@ -1046,16 +1493,48 @@ final class CasioEngine: CalculatorEngine {
         case "Σxy": return sxy
         case "x̄":   return xm
         case "ȳ":   return ym
-        case "σx":  return sqrt(sx2/n - xm*xm)
-        case "Sx":  return n>1 ? sqrt((sx2 - n*xm*xm)/(n-1)) : nil
-        case "σy":  return sqrt(sy2/n - ym*ym)
-        case "Sy":  return n>1 ? sqrt((sy2 - n*ym*ym)/(n-1)) : nil
+        case "σx":  return sqrt(max(0, sx2/n - xm*xm))
+        case "Sx":  return n>1 ? sqrt(max(0, (sx2 - n*xm*xm)/(n-1))) : nil
+        case "σy":  return sqrt(max(0, sy2/n - ym*ym))
+        case "Sy":  return n>1 ? sqrt(max(0, (sy2 - n*ym*ym)/(n-1))) : nil
         case "minX":return xs.min()
         case "maxX":return xs.max()
-        case "a":   return linReg(xs,ys).a
-        case "b":   return linReg(xs,ys).b
-        case "r":   return linReg(xs,ys).r
-        default:    return nil
+        default: break
+        }
+
+        // Regression coefficients — mode-dependent
+        switch statSubMode {
+        case .oneVar:
+            return nil
+
+        case .linReg:
+            let r = linReg(xs, ys)
+            switch key { case "a": return r.a; case "b": return r.b; case "r": return r.r; default: return nil }
+
+        case .quadReg:
+            guard xs.count >= 3 else { return nil }
+            let q = quadReg(xs, ys)
+            switch key { case "a": return q.a; case "b": return q.b; case "c": return q.c; default: return nil }
+
+        case .logReg:
+            guard xs.allSatisfy({ $0 > 0 }) else { return nil }
+            let r = linReg(xs.map { log($0) }, ys)
+            switch key { case "a": return r.a; case "b": return r.b; case "r": return r.r; default: return nil }
+
+        case .expReg:
+            guard ys.allSatisfy({ $0 > 0 }) else { return nil }
+            let r = linReg(xs, ys.map { log($0) })
+            switch key { case "a": return exp(r.a); case "b": return r.b; case "r": return r.r; default: return nil }
+
+        case .powerReg:
+            guard xs.allSatisfy({ $0 > 0 }), ys.allSatisfy({ $0 > 0 }) else { return nil }
+            let r = linReg(xs.map { log($0) }, ys.map { log($0) })
+            switch key { case "a": return exp(r.a); case "b": return r.b; case "r": return r.r; default: return nil }
+
+        case .invReg:
+            guard xs.allSatisfy({ $0 != 0 }) else { return nil }
+            let r = linReg(xs.map { 1.0/$0 }, ys)
+            switch key { case "a": return r.a; case "b": return r.b; case "r": return r.r; default: return nil }
         }
     }
 
@@ -1066,9 +1545,42 @@ final class CasioEngine: CalculatorEngine {
         let sxy = zip(xs,ys).map(*).reduce(0,+)
         let b = (n*sxy - sx*sy) / (n*sx2 - sx*sx)
         let a = (sy - b*sx) / n
-        let denom = sqrt((n*sx2-sx*sx) * (n*sy2-sy*sy))
+        let denom = sqrt(max(0, (n*sx2-sx*sx) * (n*sy2-sy*sy)))
         let r = denom == 0 ? 0 : (n*sxy - sx*sy) / denom
         return (a, b, r)
+    }
+
+    // Quadratic regression: y = a + bx + cx²
+    // Solves the 3×3 normal-equations system via Gaussian elimination.
+    private func quadReg(_ xs:[Double],_ ys:[Double]) -> (a:Double,b:Double,c:Double) {
+        let n  = Double(xs.count)
+        let s1 = xs.reduce(0,+)
+        let s2 = xs.map{$0*$0}.reduce(0,+)
+        let s3 = xs.map{$0*$0*$0}.reduce(0,+)
+        let s4 = xs.map{$0*$0*$0*$0}.reduce(0,+)
+        let t0 = ys.reduce(0,+)
+        let t1 = zip(xs,ys).map{$0*$1}.reduce(0,+)
+        let t2 = zip(xs.map{$0*$0},ys).map{$0*$1}.reduce(0,+)
+
+        // Augmented matrix [A|b]
+        var m: [[Double]] = [
+            [n,  s1, s2, t0],
+            [s1, s2, s3, t1],
+            [s2, s3, s4, t2],
+        ]
+        for col in 0..<3 {
+            var maxRow = col
+            for row in (col+1)..<3 { if Swift.abs(m[row][col]) > Swift.abs(m[maxRow][col]) { maxRow = row } }
+            m.swapAt(col, maxRow)
+            guard Swift.abs(m[col][col]) > 1e-15 else { return (0, 0, 0) }
+            let piv = m[col][col]
+            m[col] = m[col].map { $0 / piv }
+            for row in 0..<3 where row != col {
+                let f = m[row][col]
+                m[row] = zip(m[row], m[col]).map { $0 - f * $1 }
+            }
+        }
+        return (m[0][3], m[1][3], m[2][3])
     }
 
     // MARK: - EQN dispatch
@@ -1191,31 +1703,90 @@ final class CasioEngine: CalculatorEngine {
     private func dispatchBaseN(_ key: String) {
         switch key {
         case "BIN","OCT","DEC","HEX":
-            let cur = Int(displayText, radix: radixBase(baseRadix)) ?? 0
-            if let r = BaseRadix(rawValue: key) {
-                baseRadix = r; displayText = String(cur, radix: radixBase(r)).uppercased()
-            }
-        case "AC": displayText = "0"; expression = ""
+            guard let r = BaseRadix(rawValue: key) else { return }
+            let cur = baseNParse(baseNInputStr)
+            baseRadix = r
+            baseNInputStr = baseNFormat(cur)
+            displayText = baseNInputStr
+            expression = baseNCtxExpr()
+
+        case "AC":
+            resetBaseN()
+
         case "DEL","←":
-            if displayText.count > 1 { displayText.removeLast() } else { displayText = "0" }
-        case "and","or","xor","not","neg":
-            expression += " \(key) "; displayText = expression
+            if baseNInputStr.count > 1 { baseNInputStr.removeLast() }
+            else { baseNInputStr = "0" }
+            displayText = baseNInputStr
+
+        case "AND","OR","XOR","XNOR":
+            baseNLhsVal = baseNParse(baseNInputStr)
+            baseNOp = key
+            baseNInputStr = "0"
+            expression = "\(baseNFormat(baseNLhsVal)) \(key)"
+            displayText = "0"
+
+        case "NOT":
+            let v = baseNParse(baseNInputStr)
+            let r = baseNFormat((~v) & 0xFFFF_FFFF)
+            tape.append(TapeEntry(label: "NOT \(baseNInputStr)", result: r))
+            baseNInputStr = r; expression = ""; displayText = r
+
+        case "NEG":
+            let v = baseNParse(baseNInputStr)
+            let r = baseNFormat((-v) & 0xFFFF_FFFF)
+            tape.append(TapeEntry(label: "NEG \(baseNInputStr)", result: r))
+            baseNInputStr = r; expression = ""; displayText = r
+
         case "=":
-            // evaluate base-N expression (simplified: just passthrough for now)
-            displayText = displayText
+            guard let op = baseNOp else { return }
+            let lhs = baseNLhsVal
+            let rhs = baseNParse(baseNInputStr)
+            let result: Int
+            switch op {
+            case "AND":  result = (lhs & rhs)     & 0xFFFF_FFFF
+            case "OR":   result = (lhs | rhs)     & 0xFFFF_FFFF
+            case "XOR":  result = (lhs ^ rhs)     & 0xFFFF_FFFF
+            case "XNOR": result = (~(lhs ^ rhs))  & 0xFFFF_FFFF
+            default: return
+            }
+            let label = "\(baseNFormat(lhs)) \(op) \(baseNFormat(rhs))"
+            let r = baseNFormat(result)
+            tape.append(TapeEntry(label: label, result: r))
+            baseNInputStr = r; baseNLhsVal = 0; baseNOp = nil
+            expression = label; displayText = r
+
         default:
-            let valid: Set<String>
+            let k = key.uppercased()
+            let (valid, maxLen): (Set<String>, Int)
             switch baseRadix {
-            case .bin: valid=["0","1"]
-            case .oct: valid=["0","1","2","3","4","5","6","7"]
-            case .dec: valid=["0","1","2","3","4","5","6","7","8","9"]
-            case .hex: valid=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
+            case .bin: valid = Set("01".map(String.init));         maxLen = 32
+            case .oct: valid = Set("01234567".map(String.init));   maxLen = 11
+            case .dec: valid = Set("0123456789".map(String.init)); maxLen = 10
+            case .hex: valid = Set("0123456789ABCDEF".map(String.init)); maxLen = 8
             }
-            if valid.contains(key.uppercased()) {
-                if displayText == "0" { displayText = "" }
-                displayText += key.uppercased(); expression = displayText
-            }
+            guard valid.contains(k), baseNInputStr.count < maxLen else { return }
+            if baseNInputStr == "0" { baseNInputStr = k } else { baseNInputStr += k }
+            displayText = baseNInputStr
+            expression = baseNCtxExpr()
         }
+    }
+
+    private func resetBaseN() {
+        baseNLhsVal = 0; baseNOp = nil; baseNInputStr = "0"
+        expression = ""; displayText = "0"
+    }
+
+    private func baseNParse(_ s: String) -> Int {
+        (Int(s, radix: radixBase(baseRadix)) ?? 0) & 0xFFFF_FFFF
+    }
+
+    private func baseNFormat(_ v: Int) -> String {
+        String(v & 0xFFFF_FFFF, radix: radixBase(baseRadix), uppercase: true)
+    }
+
+    private func baseNCtxExpr() -> String {
+        guard let op = baseNOp else { return "" }
+        return "\(baseNFormat(baseNLhsVal)) \(op)"
     }
 
     private func radixBase(_ r: BaseRadix) -> Int {
@@ -1359,18 +1930,22 @@ private struct ExprParser {
         case .fn(let name):
             pos += 1
             guard let c = cur, case .lp = c else { return nil }; pos += 1
-            guard let a1 = parseExpr() else { return nil }
-            var a2: Double? = nil
-            if let c2 = cur, case .comma = c2 { pos += 1; a2 = parseExpr() }
+            var args: [Double] = []
+            if let a1 = parseExpr() {
+                args.append(a1)
+                while let c2 = cur, case .comma = c2 { pos += 1; if let a = parseExpr() { args.append(a) } }
+            }
             if let c3 = cur, case .rp = c3 { pos += 1 }
-            return applyFn(name, a1, a2)
+            return applyFn(name, args)
         default: return nil
         }
     }
 
     // MARK: Function application
 
-    private func applyFn(_ name: String, _ a: Double, _ b: Double?) -> Double? {
+    private func applyFn(_ name: String, _ args: [Double]) -> Double? {
+        let a = args.first ?? 0
+        let b: Double? = args.count > 1 ? args[1] : nil
         let rad = angle.toRadians(a)
         switch name {
         case "sin":    return sin(rad)
@@ -1404,8 +1979,114 @@ private struct ExprParser {
         case "Rem":    guard let b, b != 0 else{return nil}; return a.truncatingRemainder(dividingBy: b)
         case "RanInt","RandInt":
             guard let b else{return nil}; return Double(Int.random(in: Int(a)...Int(b)))
+
+        // Statistical distributions
+        // NormPD(x, σ, μ)
+        case "NormPD":
+            let sigma = args.count > 1 ? args[1] : 1.0
+            let mu    = args.count > 2 ? args[2] : 0.0
+            guard sigma > 0 else { return nil }
+            let z = (a - mu) / sigma
+            return exp(-0.5*z*z) / (sigma * sqrt(2 * .pi))
+
+        // NormCD(lower, upper, σ, μ)
+        case "NormCD":
+            guard args.count >= 2 else { return nil }
+            let upper = args[1]
+            let sigma = args.count > 2 ? args[2] : 1.0
+            let mu    = args.count > 3 ? args[3] : 0.0
+            guard sigma > 0 else { return nil }
+            return normCDF((upper-mu)/sigma) - normCDF((a-mu)/sigma)
+
+        // InvNorm(area, σ, μ)  — area = cumulative probability
+        case "InvNorm":
+            let sigma = args.count > 1 ? args[1] : 1.0
+            let mu    = args.count > 2 ? args[2] : 0.0
+            guard a > 0, a < 1, sigma > 0 else { return nil }
+            return mu + sigma * invNormCDF(a)
+
+        // BinomPD(k, n, p)
+        case "BinomPD":
+            guard args.count >= 3 else { return nil }
+            let n = args[1]; let p = args[2]
+            guard p >= 0, p <= 1, n >= 0, a >= 0, a <= n else { return nil }
+            let k = Int(a.rounded()); let ni = Int(n.rounded())
+            return exp(logComb(ni, k) + Double(k)*log(max(p,1e-300)) + Double(ni-k)*log(max(1-p,1e-300)))
+
+        // BinomCD(k, n, p) — cumulative P(X ≤ k)
+        case "BinomCD":
+            guard args.count >= 3 else { return nil }
+            let n = args[1]; let p = args[2]
+            guard p >= 0, p <= 1, n >= 0, a >= 0, a <= n else { return nil }
+            let kMax = Int(a.rounded()); let ni = Int(n.rounded())
+            var sum = 0.0
+            for k in 0...kMax {
+                sum += exp(logComb(ni, k) + Double(k)*log(max(p,1e-300)) + Double(ni-k)*log(max(1-p,1e-300)))
+            }
+            return sum
+
+        // PoissonPD(k, λ)
+        case "PoissonPD":
+            guard args.count >= 2 else { return nil }
+            let lambda = args[1]
+            guard lambda > 0, a >= 0 else { return nil }
+            let k = Int(a.rounded())
+            return exp(Double(k)*log(lambda) - lambda - lgamma(Double(k+1)))
+
+        // PoissonCD(k, λ) — cumulative P(X ≤ k)
+        case "PoissonCD":
+            guard args.count >= 2 else { return nil }
+            let lambda = args[1]
+            guard lambda > 0, a >= 0 else { return nil }
+            let kMax = Int(a.rounded())
+            var sum = 0.0
+            for k in 0...kMax {
+                sum += exp(Double(k)*log(lambda) - lambda - lgamma(Double(k+1)))
+            }
+            return sum
+
         default: return nil
         }
+    }
+
+    // Standard normal CDF via erf
+    private func normCDF(_ z: Double) -> Double {
+        return 0.5 * (1.0 + erf(z / sqrt(2.0)))
+    }
+
+    // Inverse normal CDF — Acklam's rational approximation (max error ≈ 1.15e-9)
+    private func invNormCDF(_ p: Double) -> Double {
+        let a = [-3.969683028665376e+01,  2.209460984245205e+02,
+                 -2.759285104469687e+02,  1.383577518672690e+02,
+                 -3.066479806614716e+01,  2.506628277459239e+00]
+        let b = [-5.447609879822406e+01,  1.615858368580409e+02,
+                 -1.556989798598866e+02,  6.680131188771972e+01,
+                 -1.328068155288572e+01]
+        let c = [-7.784894002430293e-03, -3.223964580411365e-01,
+                 -2.400758277161838e+00, -2.549732539343734e+00,
+                  4.374664141464968e+00,  2.938163982698783e+00]
+        let d = [ 7.784695709041462e-03,  3.224671290700398e-01,
+                  2.445134137142996e+00,  3.754408661907416e+00]
+        let plo = 0.02425, phi = 1 - plo
+        if p < plo {
+            let q = sqrt(-2*log(p))
+            return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+                   ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
+        } else if p <= phi {
+            let q = p - 0.5; let r = q*q
+            return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
+                   (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)
+        } else {
+            let q = sqrt(-2*log(1-p))
+            return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+                    ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
+        }
+    }
+
+    // log(C(n,k)) using lgamma for numerical stability
+    private func logComb(_ n: Int, _ k: Int) -> Double {
+        guard k >= 0, k <= n else { return -Double.infinity }
+        return lgamma(Double(n+1)) - lgamma(Double(k+1)) - lgamma(Double(n-k+1))
     }
 
     // MARK: Combinatorics helpers
@@ -1430,7 +2111,8 @@ private struct ExprParser {
             "sinh","cosh","tanh","sin","cos","tan",
             "log_b","log","ln","e^","10^",
             "³√","√","Abs","abs","Int","Frac","Rnd",
-            "GCD","LCM","Rem","RanInt","RandInt"
+            "GCD","LCM","Rem","RanInt","RandInt",
+            "NormPD","NormCD","InvNorm","BinomPD","BinomCD","PoissonPD","PoissonCD"
         ]
         var toks: [Tok] = []
         var i = input.startIndex
