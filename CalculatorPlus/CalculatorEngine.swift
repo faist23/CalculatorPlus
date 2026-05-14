@@ -24,6 +24,7 @@ enum CalculatorType: String, CaseIterable {
     case hp12c = "Financial"
     case hp15c = "Scientific"
     case casio = "Natural"
+    case ti84  = "Graphing"
 }
 
 // MARK: - Router
@@ -37,6 +38,7 @@ final class CalculatorRouter {
     let hp12c = HPFinancialEngine()
     let hp15c = HPScientificEngine()
     let casio = CasioEngine()
+    let ti84  = TI84Engine()
 
     init() {
         if let raw = UserDefaults.standard.string(forKey: "activeCalculator"),

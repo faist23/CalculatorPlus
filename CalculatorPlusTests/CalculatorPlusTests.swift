@@ -1226,3 +1226,254 @@ final class HPFinancialEngineExtraTests: XCTestCase {
         XCTAssertEqual(fin.stack[0], 25.0, accuracy: 1e-10)
     }
 }
+
+// MARK: - TI-84 Engine Tests
+
+final class TI84EngineTests: XCTestCase {
+
+    var ti: TI84Engine!
+
+    override func setUp() { ti = TI84Engine() }
+
+    // MARK: - Expression evaluator
+
+    private func eval(_ expr: String) throws -> Double { try ti.evaluate(expr) }
+
+    func testAdd() throws {
+        XCTAssertEqual(try eval("2+2"), 4, accuracy: 1e-10)
+    }
+
+    func testOperatorPrecedence() throws {
+        XCTAssertEqual(try eval("2*3+1"), 7, accuracy: 1e-10)
+    }
+
+    func testImplicitMultiplyXVar() throws {
+        ti.variables["X"] = 3
+        XCTAssertEqual(try eval("2X"), 6, accuracy: 1e-10)
+    }
+
+    func testImplicitMultiplyFunction() throws {
+        ti.angleMode = .radian
+        ti.variables["X"] = Double.pi / 2
+        XCTAssertEqual(try eval("2sin(X)"), 2, accuracy: 1e-9)
+    }
+
+    func testSinDegrees() throws {
+        ti.angleMode = .degree
+        XCTAssertEqual(try eval("sin(30)"), 0.5, accuracy: 1e-10)
+    }
+
+    func testSinRadians() throws {
+        ti.angleMode = .radian
+        XCTAssertEqual(try eval("sin(π/2)"), 1, accuracy: 1e-10)
+    }
+
+    func testUnaryMinus() throws {
+        XCTAssertEqual(try eval("(-)5"), -5, accuracy: 1e-10)
+    }
+
+    func testPostfixSquared() throws {
+        XCTAssertEqual(try eval("3\u{00B2}"), 9, accuracy: 1e-10)
+    }
+
+    func testPostfixInverse() throws {
+        XCTAssertEqual(try eval("4\u{207B}\u{00B9}"), 0.25, accuracy: 1e-10)
+    }
+
+    func testPower() throws {
+        XCTAssertEqual(try eval("2^10"), 1024, accuracy: 1e-10)
+    }
+
+    func testSqrt() throws {
+        XCTAssertEqual(try eval("√(16)"), 4, accuracy: 1e-10)
+    }
+
+    func testLnOfE() throws {
+        ti.angleMode = .radian
+        XCTAssertEqual(try eval("ln(e^(1))"), 1, accuracy: 1e-9)
+    }
+
+    func testLog100() throws {
+        XCTAssertEqual(try eval("log(100)"), 2, accuracy: 1e-10)
+    }
+
+    func testArcsinDegrees() throws {
+        ti.angleMode = .degree
+        XCTAssertEqual(try eval("sin⁻¹(1)"), 90, accuracy: 1e-9)
+    }
+
+    func testNCr() throws {
+        XCTAssertEqual(try eval("nCr(5,2)"), 10, accuracy: 1e-10)
+    }
+
+    func testNPr() throws {
+        XCTAssertEqual(try eval("nPr(5,2)"), 20, accuracy: 1e-10)
+    }
+
+    func testEmptyInputNoCrash() {
+        XCTAssertThrowsError(try eval(""))
+    }
+
+    func testDivisionByZero() {
+        XCTAssertThrowsError(try eval("1/0"))
+    }
+
+    func testUnclosedParen() {
+        XCTAssertThrowsError(try eval("sin("))
+    }
+
+    func testAnsRecall() throws {
+        // Evaluate 5 to set ansValue, then evaluate Ans
+        ti.dispatch("5")
+        ti.dispatch("ENTER")
+        XCTAssertEqual(try eval("Ans"), 5, accuracy: 1e-10)
+    }
+
+    // MARK: - Graph data
+
+    func testGraphPointsSineInRange() throws {
+        ti.angleMode = .radian
+        ti.yFunctions[0] = "sin(X)"
+        ti.yEnabled[0] = true
+        ti.xMin = 0; ti.xMax = 2 * Double.pi
+        let pts = ti.graphPoints(for: 0, pixelWidth: 100)
+        let nonNil = pts.compactMap { $0 }
+        XCTAssertFalse(nonNil.isEmpty)
+        for p in nonNil {
+            XCTAssertTrue(p.y >= -1.001 && p.y <= 1.001, "y out of range: \(p.y)")
+        }
+    }
+
+    func testGraphPointsLinearEndpoints() {
+        ti.yFunctions[0] = "X"
+        ti.yEnabled[0] = true
+        ti.xMin = -5; ti.xMax = 5
+        let pts = ti.graphPoints(for: 0, pixelWidth: 100)
+        let nonNil = pts.compactMap { $0 }
+        XCTAssertFalse(nonNil.isEmpty)
+        XCTAssertEqual(nonNil.first!.x, -5, accuracy: 0.1)
+        XCTAssertEqual(nonNil.last!.x, 5, accuracy: 0.1)
+    }
+
+    func testGraphPointsDiscontinuityAtZero() {
+        // √(X) returns NaN for negative x → nil graph points
+        ti.yFunctions[0] = "√(X)"
+        ti.yEnabled[0] = true
+        ti.xMin = -5; ti.xMax = 5
+        let pts = ti.graphPoints(for: 0, pixelWidth: 100)
+        XCTAssertTrue(pts.contains(where: { $0 == nil }), "Expected nil points for √ of negative x")
+    }
+
+    func testGraphCacheHit() {
+        ti.yFunctions[0] = "X"
+        ti.yEnabled[0] = true
+        ti.xMin = -1; ti.xMax = 1
+        let pts1 = ti.graphPoints(for: 0, pixelWidth: 50)
+        let pts2 = ti.graphPoints(for: 0, pixelWidth: 50)
+        XCTAssertEqual(pts1.count, pts2.count)
+    }
+
+    func testGraphCacheInvalidatedOnXMinChange() {
+        ti.yFunctions[0] = "X"
+        ti.yEnabled[0] = true
+        ti.xMin = -1; ti.xMax = 1
+        _ = ti.graphPoints(for: 0, pixelWidth: 50)
+        XCTAssertFalse(ti.cachedGraphData.isEmpty)
+        ti.xMin = -2  // triggers didSet → cache cleared
+        XCTAssertTrue(ti.cachedGraphData.isEmpty)
+    }
+
+    // MARK: - STAT
+
+    func testStat1Var_basic() {
+        ti.statLists[0] = [1, 2, 3, 4, 5]
+        let r = ti.stat1Var()
+        XCTAssertEqual(r.n, 5)
+        XCTAssertEqual(r.mean, 3, accuracy: 1e-10)
+        XCTAssertEqual(r.sumX, 15, accuracy: 1e-10)
+    }
+
+    func testStat1Var_stdDev() {
+        ti.statLists[0] = [2, 4, 6]
+        let r = ti.stat1Var()
+        XCTAssertEqual(r.sx, 2, accuracy: 1e-9)
+    }
+
+    func testStat1Var_emptyNoCrash() {
+        ti.statLists[0] = []
+        let r = ti.stat1Var()
+        XCTAssertEqual(r.n, 0)
+    }
+
+    func testLinReg_perfectFit() {
+        ti.statLists[0] = [1, 2, 3]
+        ti.statLists[1] = [2, 4, 6]
+        let r = ti.linReg()
+        XCTAssertEqual(r.a, 0, accuracy: 1e-9)
+        XCTAssertEqual(r.b, 2, accuracy: 1e-9)
+        XCTAssertEqual(r.r, 1, accuracy: 1e-9)
+    }
+
+    func testLinReg_singlePointNoCrash() {
+        ti.statLists[0] = [1]
+        ti.statLists[1] = [2]
+        _ = ti.linReg() // just verify no crash
+    }
+
+    // MARK: - MATRIX (via dispatch)
+
+    private func setMatrix(_ idx: Int, rows: [[Double]]) {
+        ti.matrices[idx] = rows
+        ti.matrixDims[idx] = (rows: rows.count, cols: rows.first?.count ?? 0)
+    }
+
+    private func enterMatrixOps() {
+        ti.screen = .matrixEditor
+        ti.matPhase = .ops
+    }
+
+    func testMatrixDet2x2() throws {
+        // det([[1,2],[3,4]]) = 1*4 - 2*3 = -2
+        setMatrix(0, rows: [[1, 2], [3, 4]])
+        enterMatrixOps()
+        ti.dispatch("MAT_OP_DET")
+        XCTAssertTrue(ti.displayText.contains("-2") || ti.displayText.contains("−2"),
+                      "Expected -2 in display, got: \(ti.displayText)")
+    }
+
+    func testMatrixDetIdentity() throws {
+        setMatrix(0, rows: [[1, 0], [0, 1]])
+        enterMatrixOps()
+        ti.dispatch("MAT_OP_DET")
+        XCTAssertTrue(ti.displayText.contains("1"), "Expected 1 in display, got: \(ti.displayText)")
+    }
+
+    func testMatrixInverse2x2() throws {
+        setMatrix(0, rows: [[2, 0], [0, 2]])
+        enterMatrixOps()
+        ti.dispatch("MAT_OP_INV")
+        // Result stored in matrices[0]; expect [[0.5, 0],[0,0.5]]
+        XCTAssertEqual(ti.matrices[0][0][0], 0.5, accuracy: 1e-9)
+        XCTAssertEqual(ti.matrices[0][1][1], 0.5, accuracy: 1e-9)
+    }
+
+    func testMatrixMultiplyByIdentity() throws {
+        let A: [[Double]] = [[1, 2], [3, 4]]
+        setMatrix(0, rows: A)
+        setMatrix(1, rows: [[1, 0], [0, 1]])
+        enterMatrixOps()
+        ti.dispatch("MAT_OP_MUL")
+        // A × I = A
+        XCTAssertEqual(ti.matrices[0][0][0], 1, accuracy: 1e-9)
+        XCTAssertEqual(ti.matrices[0][0][1], 2, accuracy: 1e-9)
+        XCTAssertEqual(ti.matrices[0][1][0], 3, accuracy: 1e-9)
+        XCTAssertEqual(ti.matrices[0][1][1], 4, accuracy: 1e-9)
+    }
+
+    func testMatrixDetNonSquare() {
+        setMatrix(0, rows: [[1, 2, 3], [4, 5, 6]])
+        enterMatrixOps()
+        ti.dispatch("MAT_OP_DET")
+        XCTAssertTrue(ti.displayText.contains("ERR"), "Expected ERR for non-square det, got: \(ti.displayText)")
+    }
+}

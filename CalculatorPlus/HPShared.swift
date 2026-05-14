@@ -279,7 +279,21 @@ struct FaceplateGroupHeader: View {
     }
 }
 
-// MARK: - Press style
+// MARK: - Shared calculator press style (used by Casio and TI-84)
+
+struct CalcPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .onChange(of: configuration.isPressed) { _, pressed in
+                if pressed { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
+            }
+            .scaleEffect(configuration.isPressed ? 0.91 : 1.0)
+            .brightness(configuration.isPressed ? -0.12 : 0)
+            .animation(.easeOut(duration: 0.07), value: configuration.isPressed)
+    }
+}
+
+// MARK: - HP calculator press style
 
 struct HPPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

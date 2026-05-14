@@ -55,6 +55,8 @@
 		CE00EE001E512D9100442037 /* CalculatorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00EE011E512D9100442037 /* CalculatorEngine.swift */; };
 		CE00FF001E512D9100442037 /* CasioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00FF011E512D9100442037 /* CasioEngine.swift */; };
 		CE01AA001E512D9100442037 /* CasioCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE01AA011E512D9100442037 /* CasioCalculatorView.swift */; };
+		CE02BB011E512D9100442037 /* TI84Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE02BB001E512D9100442037 /* TI84Engine.swift */; };
+		CE03CC011E512D9100442037 /* TI84CalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE03CC001E512D9100442037 /* TI84CalculatorView.swift */; };
 		BB01FF001E512D9100442037 /* CalculatorPlusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -108,6 +110,8 @@
 		CE00EE011E512D9100442037 /* CalculatorEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalculatorEngine.swift; sourceTree = "<group>"; };
 		CE00FF011E512D9100442037 /* CasioEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CasioEngine.swift; sourceTree = "<group>"; };
 		CE01AA011E512D9100442037 /* CasioCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CasioCalculatorView.swift; sourceTree = "<group>"; };
+		CE02BB001E512D9100442037 /* TI84Engine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TI84Engine.swift; sourceTree = "<group>"; };
+		CE03CC001E512D9100442037 /* TI84CalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TI84CalculatorView.swift; sourceTree = "<group>"; };
 		BB01FF011E512D9100442037 /* CalculatorPlusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPlusTests.swift; sourceTree = "<group>"; };
 		BB03FF061E512D9100442037 /* CalculatorPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculatorPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7216AA91ADBC7F46F1E92BD /* StandardCalculatorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StandardCalculatorView.swift; sourceTree = "<group>"; };
@@ -172,6 +176,8 @@
 				CE00EE011E512D9100442037 /* CalculatorEngine.swift */,
 				CE00FF011E512D9100442037 /* CasioEngine.swift */,
 				CE01AA011E512D9100442037 /* CasioCalculatorView.swift */,
+				CE02BB001E512D9100442037 /* TI84Engine.swift */,
+				CE03CC001E512D9100442037 /* TI84CalculatorView.swift */,
 			);
 			path = CalculatorPlus;
 			sourceTree = "<group>";
@@ -361,6 +367,8 @@
 				CE00EE001E512D9100442037 /* CalculatorEngine.swift in Sources */,
 				CE00FF001E512D9100442037 /* CasioEngine.swift in Sources */,
 				CE01AA001E512D9100442037 /* CasioCalculatorView.swift in Sources */,
+				CE02BB011E512D9100442037 /* TI84Engine.swift in Sources */,
+				CE03CC011E512D9100442037 /* TI84CalculatorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -330,14 +330,3 @@ struct CalcButton: View {
     }
 }
 
-private struct CalcPressStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .onChange(of: configuration.isPressed) { pressed in
-                if pressed { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
-            }
-            .scaleEffect(configuration.isPressed ? 0.93 : 1.0)
-            .brightness(configuration.isPressed ? -0.10 : 0)
-            .animation(.easeOut(duration: 0.07), value: configuration.isPressed)
-    }
-}

@@ -467,7 +467,7 @@ struct CasioCalculatorView: View {
             .frame(width: w, height: h)
             .opacity(enabled ? 1 : 0.3)
         }
-        .buttonStyle(CasioPressStyle())
+        .buttonStyle(CalcPressStyle())
         .disabled(!enabled)
         .accessibilityLabel(effective)
     }
@@ -686,14 +686,3 @@ private struct DistPickerSheet: View {
 
 // MARK: - Press style
 
-private struct CasioPressStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .onChange(of: configuration.isPressed) { _, pressed in
-                if pressed { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
-            }
-            .scaleEffect(configuration.isPressed ? 0.91 : 1.0)
-            .brightness(configuration.isPressed ? -0.12 : 0)
-            .animation(.easeOut(duration: 0.07), value: configuration.isPressed)
-    }
-}
