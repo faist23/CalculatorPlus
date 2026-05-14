@@ -4,27 +4,21 @@ struct MainView: View {
     @State private var router = CalculatorRouter()
     @State private var showPicker = false
 
-    private var isPortraitOnly: Bool {
-        router.active == .ti84 || router.active == .casio
-    }
+    // Calculators that only work well in one orientation
+    private var isPortraitOnly: Bool { router.active == .ti84 || router.active == .casio }
+    private var isLandscapeOnly: Bool { router.active == .hp12c || router.active == .hp15c }
 
     var body: some View {
         @Bindable var r = router
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
             ZStack(alignment: .topTrailing) {
+                // Calculator content fills the full screen (behind status bar, home indicator)
                 Group {
                     if isLandscape && isPortraitOnly {
-                        ZStack {
-                            Color(red: 0.12, green: 0.12, blue: 0.14).ignoresSafeArea()
-                            VStack(spacing: 16) {
-                                Image(systemName: "rotate.right").font(.system(size: 44))
-                                Text("Rotate to portrait\nto use \(router.active.rawValue)")
-                                    .multilineTextAlignment(.center)
-                                    .font(.title3)
-                            }
-                            .foregroundColor(.white)
-                        }
+                        rotateOverlay("Rotate to portrait\nto use \(router.active.rawValue)")
+                    } else if !isLandscape && isLandscapeOnly {
+                        rotateOverlay("Rotate to landscape\nto use \(router.active.rawValue)")
                     } else {
                         switch router.active {
                         case .hp12c:
@@ -43,9 +37,11 @@ struct MainView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()                                // content fills behind status bar
                 .animation(.easeInOut(duration: 0.25), value: isLandscape)
                 .animation(.easeInOut(duration: 0.25), value: router.active)
 
+                // Picker button sits inside the safe area (naturally below the status bar)
                 Button { showPicker = true } label: {
                     Image(systemName: "square.grid.2x2")
                         .font(.system(size: 15, weight: .medium))
@@ -54,13 +50,26 @@ struct MainView: View {
                         .background(.ultraThinMaterial, in: Circle())
                 }
                 .accessibilityLabel("Switch calculator")
-                .padding(.top, geometry.safeAreaInsets.top + 8)
+                .padding(.top, 8)
                 .padding(.trailing, 14)
             }
         }
         .sheet(isPresented: $showPicker) {
             CalculatorPickerView(active: $router.active)
         }
-        .ignoresSafeArea()
+    }
+
+    @ViewBuilder
+    private func rotateOverlay(_ message: String) -> some View {
+        ZStack {
+            Color(red: 0.12, green: 0.12, blue: 0.14).ignoresSafeArea()
+            VStack(spacing: 16) {
+                Image(systemName: "rotate.right").font(.system(size: 44))
+                Text(message)
+                    .multilineTextAlignment(.center)
+                    .font(.title3)
+            }
+            .foregroundColor(.white)
+        }
     }
 }
