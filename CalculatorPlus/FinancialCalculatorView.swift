@@ -44,7 +44,7 @@ struct FinancialCalculatorView: View {
         HPKey("CLx",  f: "REG",   g: "x=0"),
     ]
     let row4Left: [HPKey] = [
-        HPKey("SCI", f: "",      g: ""),
+        HPKey("ON",  f: "",      g: ""),
         HPKey("f",   f: "",      g: ""),
         HPKey("g",   f: "",      g: ""),
         HPKey("STO", f: "",      g: ""),
@@ -139,7 +139,9 @@ struct FinancialCalculatorView: View {
                             HStack(spacing: hGap) {
                                 ForEach(row4Left.indices, id: \.self) { i in
                                     HPButtonView(key: row4Left[i], width: btnW, height: btnH,
-                                                 shiftMode: shiftMode) { keyTapped(row4Left[i]) }
+                                                 shiftMode: shiftMode,
+                                                 isSettingsKey: i == 0,
+                                                 onSettings: { showPicker = true }) { keyTapped(row4Left[i]) }
                                 }
                             }
                         }
@@ -182,9 +184,6 @@ struct FinancialCalculatorView: View {
                 }
                 .frame(maxHeight: .infinity, alignment: .center)
             }
-            .simultaneousGesture(
-                LongPressGesture(minimumDuration: 0.5).onEnded { _ in showPicker = true }
-            )
         }
         .background(
             LinearGradient(
@@ -193,12 +192,7 @@ struct FinancialCalculatorView: View {
                 startPoint: .top, endPoint: .bottom
             ).ignoresSafeArea()
         )
-        .confirmationDialog("Switch Calculator", isPresented: $showPicker, titleVisibility: .visible) {
-            Button(CalculatorType.hp12c.rawValue) { active = .hp12c }
-            Button(CalculatorType.hp15c.rawValue) { active = .hp15c }
-            Button(CalculatorType.casio.rawValue)  { active = .casio }
-            Button("Cancel", role: .cancel) { }
-        }
+        .sheet(isPresented: $showPicker) { CalculatorPickerView(active: $active) }
     }
 
     // MARK: - LCD
@@ -227,12 +221,9 @@ struct FinancialCalculatorView: View {
                             .padding(.leading, 4)
                     }
                     Spacer()
-                    Button { showPicker = true } label: {
-                        Text(active.rawValue)
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(.black.opacity(0.45))
-                    }
-                    .buttonStyle(.plain)
+                    Text(active.rawValue)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.black.opacity(0.35))
                 }
                 .padding(.horizontal, 8)
                 .padding(.top, 5)
@@ -286,7 +277,7 @@ struct FinancialCalculatorView: View {
 
         if label == "f" { shiftMode = shiftMode == .f ? .none : .f; return }
         if label == "g" { shiftMode = shiftMode == .g ? .none : .g; return }
-        if label == "SCI" { active = .hp15c; return }
+        if label == "ON" { showPicker = true; return }
 
         // f + digit 0-9 → FIX n (HP-12C authentic behaviour)
         if shiftMode == .f, label.count == 1, let n = Int(label) {

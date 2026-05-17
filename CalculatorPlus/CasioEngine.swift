@@ -535,6 +535,37 @@ final class CasioEngine: CalculatorEngine {
              "PoissonPD","PoissonCD":
             insertFn(key)
 
+        case "S<>D":
+            // Toggle between decimal and fraction representation
+            if displayText.contains("/") {
+                if let v = evaluate(displayText) { displayText = fmt(v); ans = v }
+            } else {
+                let v = Double(displayText) ?? ans
+                if let f = decimalToFraction(v, maxDenom: 1000) { displayText = f }
+                else { displayText = fmt(v) }
+            }
+
+        case "FRAC":
+            // Fraction template — append division separator
+            if hasResult { expression = ""; hasResult = false }
+            if !expression.isEmpty { expression += "/"; displayText = expression }
+
+        case "MIXED":
+            // Mixed number template — append mixed-number separator
+            if hasResult { expression = ""; hasResult = false }
+            expression += "+"; displayText = expression
+
+        case "≈":
+            // Approximate (same as = but always decimal)
+            performEval()
+
+        case "Pol":  insertFn("Pol")
+        case "Rec":  insertFn("Rec")
+
+        case "∠":
+            // Append angle symbol for polar notation
+            if !expression.isEmpty { expression += "∠"; displayText = expression }
+
         case let key where key.hasPrefix("CONST:"):
             if let idx = Int(key.dropFirst(6)), idx < CasioEngine.physConstants.count {
                 let c = CasioEngine.physConstants[idx]
@@ -1819,6 +1850,30 @@ final class CasioEngine: CalculatorEngine {
     }
 
     func recallTapeValue(_ v: Double) { let s=fmt(v); expression=s; displayText=s; hasResult=false }
+
+    private func decimalToFraction(_ x: Double, maxDenom: Int) -> String? {
+        guard !x.isInfinite, !x.isNaN else { return nil }
+        let neg = x < 0
+        let v = Swift.abs(x)
+        let whole = Int(v)
+        let frac = v - Double(whole)
+        guard frac > 1e-10 else { return nil }
+        var p0 = 0, q0 = 1, p1 = 1, q1 = 0
+        var x1 = frac
+        for _ in 0..<30 {
+            let a = Int(x1)
+            let p2 = a * p1 + p0
+            let q2 = a * q1 + q0
+            if q2 > maxDenom { break }
+            p0 = p1; q0 = q1; p1 = p2; q1 = q2
+            let rem = x1 - Double(a)
+            if rem < 1e-12 { break }
+            x1 = 1.0 / rem
+        }
+        guard q1 > 1, Swift.abs(Double(p1)/Double(q1) - frac) < 1e-9 else { return nil }
+        let sign = neg ? "-" : ""
+        return whole == 0 ? "\(sign)\(p1)/\(q1)" : "\(sign)\(whole)+\(p1)/\(q1)"
+    }
 }
 
 // MARK: - Safe subscript
@@ -2045,6 +2100,17 @@ private struct ExprParser {
             }
             return sum
 
+        case "Pol":
+            // Pol(x, y) → r  (θ stored in Y by dispatchComp after evaluation)
+            guard let y = b else { return nil }
+            return sqrt(a*a + y*y)
+
+        case "Rec":
+            // Rec(r, θ) → x  (y-component stored in Y by dispatchComp after evaluation)
+            guard let theta = b else { return nil }
+            let thetaRad = angle.toRadians(theta)
+            return a * cos(thetaRad)
+
         default: return nil
         }
     }
@@ -2112,7 +2178,8 @@ private struct ExprParser {
             "log_b","log","ln","e^","10^",
             "³√","√","Abs","abs","Int","Frac","Rnd",
             "GCD","LCM","Rem","RanInt","RandInt",
-            "NormPD","NormCD","InvNorm","BinomPD","BinomCD","PoissonPD","PoissonCD"
+            "NormPD","NormCD","InvNorm","BinomPD","BinomCD","PoissonPD","PoissonCD",
+            "Pol","Rec"
         ]
         var toks: [Tok] = []
         var i = input.startIndex

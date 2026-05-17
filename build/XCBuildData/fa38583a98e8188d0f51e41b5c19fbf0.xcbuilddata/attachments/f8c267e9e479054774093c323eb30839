@@ -1,0 +1,96 @@
+{
+  "" : {
+    "const-values" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.swiftconstvalues",
+    "dependencies" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.d",
+    "diagnostics" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.dia",
+    "emit-module-dependencies" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary-emit-module.dia",
+    "pch" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.swiftdeps"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/CalculatorEngine.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorEngine.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorEngine.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorEngine.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/CalculatorPickerView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPickerView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPickerView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPickerView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/CalculatorPlusApp.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlusApp.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlusApp.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlusApp.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/CasioCalculatorView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CasioCalculatorView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CasioCalculatorView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CasioCalculatorView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/CasioEngine.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CasioEngine.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CasioEngine.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CasioEngine.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/FinancialCalculatorView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/FinancialCalculatorView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/FinancialCalculatorView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/FinancialCalculatorView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/HPDesign.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPDesign.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPDesign.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPDesign.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/HPFinancialEngine.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPFinancialEngine.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPFinancialEngine.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPFinancialEngine.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/HPScientificEngine.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPScientificEngine.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPScientificEngine.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPScientificEngine.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/HPShared.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPShared.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPShared.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/HPShared.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/MainView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/MainView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/MainView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/MainView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/ScientificCalculatorView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/ScientificCalculatorView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/ScientificCalculatorView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/ScientificCalculatorView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/StandardCalculatorView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/StandardCalculatorView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/StandardCalculatorView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/StandardCalculatorView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/TI84CalculatorView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TI84CalculatorView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TI84CalculatorView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TI84CalculatorView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/TI84Engine.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TI84Engine.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TI84Engine.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TI84Engine.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/TapeView.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TapeView.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TapeView.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/TapeView.o"
+  },
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

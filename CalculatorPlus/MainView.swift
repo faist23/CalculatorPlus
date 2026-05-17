@@ -12,8 +12,8 @@ struct MainView: View {
         @Bindable var r = router
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
-            ZStack(alignment: .topTrailing) {
-                // Calculator content fills the full screen (behind status bar, home indicator)
+            ZStack {
+                // Calculator content fills the full screen including behind status bar
                 Group {
                     if isLandscape && isPortraitOnly {
                         rotateOverlay("Rotate to portrait\nto use \(router.active.rawValue)")
@@ -37,23 +37,11 @@ struct MainView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .ignoresSafeArea()                                // content fills behind status bar
                 .animation(.easeInOut(duration: 0.25), value: isLandscape)
                 .animation(.easeInOut(duration: 0.25), value: router.active)
-
-                // Picker button sits inside the safe area (naturally below the status bar)
-                Button { showPicker = true } label: {
-                    Image(systemName: "square.grid.2x2")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .padding(9)
-                        .background(.ultraThinMaterial, in: Circle())
-                }
-                .accessibilityLabel("Switch calculator")
-                .padding(.top, 8)
-                .padding(.trailing, 14)
             }
         }
+        .ignoresSafeArea(.all, edges: .bottom)
         .sheet(isPresented: $showPicker) {
             CalculatorPickerView(active: $router.active)
         }
@@ -68,6 +56,12 @@ struct MainView: View {
                 Text(message)
                     .multilineTextAlignment(.center)
                     .font(.title3)
+                Button { showPicker = true } label: {
+                    Image(systemName: "square.grid.2x2")
+                        .font(.system(size: 18, weight: .medium))
+                        .padding(12)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
             }
             .foregroundColor(.white)
         }

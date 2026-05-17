@@ -1,0 +1,12 @@
+{
+  "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/CalculatorPlus/MainView.swift" : {
+    "abi-baseline-json" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus.abi.json",
+    "const-values" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.swiftconstvalues",
+    "dependencies" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.d",
+    "diagnostics" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-primary.dia",
+    "objc-header" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus-Swift.h",
+    "swiftdoc" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus.swiftdoc",
+    "swiftmodule" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus.swiftmodule",
+    "swiftsourceinfo" : "/Users/craigfaist/Desktop/weatherApp/CalculatorPlus/build/CalculatorPlus.build/Release-iphoneos/CalculatorPlus.build/Objects-normal/arm64/CalculatorPlus.swiftsourceinfo"
+  }
+}

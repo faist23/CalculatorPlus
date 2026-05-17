@@ -32,41 +32,39 @@ private struct TIKeyDef: Hashable {
 
 private struct DPadView: View {
     let dispatch: (String) -> Void
+    let size: CGFloat
 
     var body: some View {
+        let arm = size / 3
         ZStack {
-            Circle()
-                .fill(Color.tiKeyDark)
-                .frame(width: 58, height: 58)
+            Circle().fill(Color.tiKeyDark).frame(width: size, height: size)
             VStack(spacing: 0) {
                 Button { dispatch("UP") } label: {
-                    Text("▲").font(.system(size: 10, weight: .semibold)).foregroundColor(.white)
-                        .frame(width: 58, height: 19)
+                    Text("▲").font(.system(size: 9, weight: .semibold)).foregroundColor(.white)
+                        .frame(width: size, height: arm)
                 }
                 .accessibilityLabel("Up")
                 HStack(spacing: 0) {
                     Button { dispatch("LEFT") } label: {
-                        Text("◄").font(.system(size: 10, weight: .semibold)).foregroundColor(.white)
-                            .frame(width: 19, height: 20)
+                        Text("◄").font(.system(size: 9, weight: .semibold)).foregroundColor(.white)
+                            .frame(width: arm, height: arm)
                     }
                     .accessibilityLabel("Left")
-                    Circle()
-                        .fill(Color(red: 0.14, green: 0.14, blue: 0.17))
-                        .frame(width: 20, height: 20)
+                    Circle().fill(Color(red: 0.14, green: 0.14, blue: 0.17)).frame(width: arm, height: arm)
                     Button { dispatch("RIGHT") } label: {
-                        Text("►").font(.system(size: 10, weight: .semibold)).foregroundColor(.white)
-                            .frame(width: 19, height: 20)
+                        Text("►").font(.system(size: 9, weight: .semibold)).foregroundColor(.white)
+                            .frame(width: arm, height: arm)
                     }
                     .accessibilityLabel("Right")
                 }
                 Button { dispatch("DOWN") } label: {
-                    Text("▼").font(.system(size: 10, weight: .semibold)).foregroundColor(.white)
-                        .frame(width: 58, height: 19)
+                    Text("▼").font(.system(size: 9, weight: .semibold)).foregroundColor(.white)
+                        .frame(width: size, height: arm)
                 }
                 .accessibilityLabel("Down")
             }
         }
-        .frame(width: 58, height: 58)
+        .frame(width: size, height: size)
         .clipShape(Circle())
     }
 }
@@ -127,6 +125,8 @@ struct TI84CalculatorView: View {
     @Binding var active: CalculatorType
     let engine: TI84Engine
 
+    @State private var showCalcPicker = false
+
     var body: some View {
         GeometryReader { geo in
             let isLandscape = geo.size.width > geo.size.height
@@ -155,6 +155,7 @@ struct TI84CalculatorView: View {
         )) {
             StatResultsView(engine: engine)
         }
+        .sheet(isPresented: $showCalcPicker) { CalculatorPickerView(active: $active) }
     }
 
     // MARK: Screen area
@@ -191,135 +192,62 @@ struct TI84CalculatorView: View {
 
     @ViewBuilder
     private func keyGrid(totalHeight: CGFloat, totalWidth: CGFloat) -> some View {
-        let colW = totalWidth / 5
+        let hPad: CGFloat = 4
+        let hGap: CGFloat = 4
+        let kW = (totalWidth - 2 * hPad - 4 * hGap) / 5
         let rowH = totalHeight / 10
-        let kW = colW - 4
-        let kH = rowH - 6
 
         VStack(spacing: 0) {
-            // Row 0: Graph function row (5-column)
-            row0(kW: kW, kH: kH, rowH: rowH)
-
-            // Rows 1–3: D-pad zone
-            dPadZone(kW: kW, kH: kH, rowH: rowH, colW: colW)
-
-            // Row 4: x², ',', (, ), ÷
-            standardRow(keys: row4Keys, kW: kW, kH: kH, rowH: rowH)
-
-            // Row 5: log, 7, 8, 9, ×
-            standardRow(keys: row5Keys, kW: kW, kH: kH, rowH: rowH)
-
-            // Row 6: ln, 4, 5, 6, −
-            standardRow(keys: row6Keys, kW: kW, kH: kH, rowH: rowH)
-
-            // Row 7: X,T,θ,n, 1, 2, 3, +
-            standardRow(keys: row7Keys, kW: kW, kH: kH, rowH: rowH)
-
-            // Rows 8–9: STAT/ON, 0, ., (−), ENTER (tall)
-            bottomZone(kW: kW, kH: kH, rowH: rowH, colW: colW)
+            // Row 0: Y= WINDOW ZOOM TRACE GRAPH
+            standardRow(keys: row0Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Rows 1–2: 3 keys left + D-pad right
+            dPadZone(kW: kW, rowH: rowH, hGap: hGap)
+            // Row 3: MATH APPS PRGM VARS CLEAR
+            standardRow(keys: row3Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Row 4: x⁻¹ SIN COS TAN ^
+            standardRow(keys: row4Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Row 5: x² , ( ) ÷
+            standardRow(keys: row5Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Row 6: log 7 8 9 ×
+            standardRow(keys: row6Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Row 7: ln 4 5 6 −
+            standardRow(keys: row7Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Row 8: STO→ 1 2 3 +
+            standardRow(keys: row8Keys, kW: kW, rowH: rowH, hGap: hGap)
+            // Row 9: ⚙(picker) 0 . (-) ENTER
+            HStack(spacing: hGap) {
+                Button { showCalcPicker = true } label: {
+                    VStack(spacing: 1) {
+                        Color.clear.frame(height: 10)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.tiKeyDark)
+                                .shadow(color: .black.opacity(0.4), radius: 1.5, x: 0, y: 1.5)
+                            Image(systemName: "gearshape")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .frame(width: kW, height: rowH - 12)
+                    }
+                }
+                .buttonStyle(CalcPressStyle())
+                .frame(width: kW, height: rowH)
+                .accessibilityLabel("Switch calculator")
+                ForEach(row9Trailing.indices, id: \.self) { i in
+                    TIKeyButton(def: row9Trailing[i].0, width: kW, height: rowH) {
+                        engine.dispatch(row9Trailing[i].1)
+                    }
+                }
+            }
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, hPad)
         .padding(.bottom, 4)
-    }
-
-    // Row 0
-    @ViewBuilder
-    private func row0(kW: CGFloat, kH: CGFloat, rowH: CGFloat) -> some View {
-        let keys: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "Y=",     second: "STAT PLT", alpha: "", color: .tiKeyGraph, accessibilityLabel: "Y equals"), "Y="),
-            (TIKeyDef(label: "WINDOW", second: "TBLSET",   alpha: "", color: .tiKeyGraph, accessibilityLabel: "Window"), "WINDOW"),
-            (TIKeyDef(label: "ZOOM",   second: "FORMAT",   alpha: "", color: .tiKeyGraph, accessibilityLabel: "Zoom"), "ZOOM"),
-            (TIKeyDef(label: "TRACE",  second: "CALC",     alpha: "", color: .tiKeyGraph, accessibilityLabel: "Trace"), "TRACE"),
-            (TIKeyDef(label: "GRAPH",  second: "TABLE",    alpha: "", color: .tiKeyGraph, accessibilityLabel: "Graph"), "GRAPH"),
-        ]
-        HStack(spacing: 4) {
-            ForEach(keys.indices, id: \.self) { i in
-                TIKeyButton(def: keys[i].0, width: kW, height: rowH) {
-                    engine.dispatch(keys[i].1)
-                }
-            }
-        }
-    }
-
-    // D-pad zone rows 1–3
-    @ViewBuilder
-    private func dPadZone(kW: CGFloat, kH: CGFloat, rowH: CGFloat, colW: CGFloat) -> some View {
-        let row1Left: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "2nd",  second: "",     alpha: "LOCK", color: .tiKey2nd,   accessibilityLabel: "2nd", cornerRadius: 6), "2ND"),
-            (TIKeyDef(label: "MODE", second: "QUIT", alpha: "",     color: .tiKeyDark,  accessibilityLabel: "Mode"), "MODE"),
-        ]
-        let row1Right: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "DEL",   second: "INS",  alpha: "", color: .tiKeyDark,  accessibilityLabel: "Delete"), "DEL"),
-            (TIKeyDef(label: "ALPHA", second: "",     alpha: "", color: .tiKeyAlpha, accessibilityLabel: "Alpha", cornerRadius: 6), "ALPHA"),
-        ]
-        let row2Left: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "MATH", second: "TEST",  alpha: "A", color: .tiKeyDark, accessibilityLabel: "Math"), "MATH"),
-            (TIKeyDef(label: "APPS", second: "",      alpha: "B", color: .tiKeyDark, accessibilityLabel: "Apps"), "APPS"),
-        ]
-        let row2Right: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "PRGM",  second: "",   alpha: "C", color: .tiKeyDark,  accessibilityLabel: "Program"), "PRGM"),
-            (TIKeyDef(label: "CLEAR", second: "",   alpha: "",  color: .tiKeyClear, accessibilityLabel: "Clear"), "CLEAR"),
-        ]
-        let row3Left: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "x⁻¹", second: "MATRIX", alpha: "D", color: .tiKeyDark, accessibilityLabel: "x inverse"), "x⁻¹"),
-            (TIKeyDef(label: "sin",  second: "sin⁻¹",  alpha: "E", color: .tiKeyDark, accessibilityLabel: "Sine"), "SIN"),
-        ]
-        let row3Right: [(TIKeyDef, String)] = [
-            (TIKeyDef(label: "cos", second: "cos⁻¹", alpha: "F", color: .tiKeyDark, accessibilityLabel: "Cosine"), "COS"),
-            (TIKeyDef(label: "tan", second: "tan⁻¹", alpha: "G", color: .tiKeyDark, accessibilityLabel: "Tangent"), "TAN"),
-        ]
-        let dPadW: CGFloat = colW
-        let dPadH: CGFloat = rowH * 3
-
-        HStack(spacing: 0) {
-            // Left 2 columns
-            VStack(spacing: 0) {
-                HStack(spacing: 4) {
-                    ForEach(row1Left.indices, id: \.self) { i in
-                        TIKeyButton(def: row1Left[i].0, width: kW, height: rowH) { engine.dispatch(row1Left[i].1) }
-                    }
-                }
-                HStack(spacing: 4) {
-                    ForEach(row2Left.indices, id: \.self) { i in
-                        TIKeyButton(def: row2Left[i].0, width: kW, height: rowH) { engine.dispatch(row2Left[i].1) }
-                    }
-                }
-                HStack(spacing: 4) {
-                    ForEach(row3Left.indices, id: \.self) { i in
-                        TIKeyButton(def: row3Left[i].0, width: kW, height: rowH) { engine.dispatch(row3Left[i].1) }
-                    }
-                }
-            }
-
-            // D-pad column
-            DPadView(dispatch: engine.dispatch)
-                .frame(width: dPadW, height: dPadH)
-
-            // Right 2 columns
-            VStack(spacing: 0) {
-                HStack(spacing: 4) {
-                    ForEach(row1Right.indices, id: \.self) { i in
-                        TIKeyButton(def: row1Right[i].0, width: kW, height: rowH) { engine.dispatch(row1Right[i].1) }
-                    }
-                }
-                HStack(spacing: 4) {
-                    ForEach(row2Right.indices, id: \.self) { i in
-                        TIKeyButton(def: row2Right[i].0, width: kW, height: rowH) { engine.dispatch(row2Right[i].1) }
-                    }
-                }
-                HStack(spacing: 4) {
-                    ForEach(row3Right.indices, id: \.self) { i in
-                        TIKeyButton(def: row3Right[i].0, width: kW, height: rowH) { engine.dispatch(row3Right[i].1) }
-                    }
-                }
-            }
-        }
     }
 
     // Standard 5-column row
     @ViewBuilder
-    private func standardRow(keys: [(TIKeyDef, String)], kW: CGFloat, kH: CGFloat, rowH: CGFloat) -> some View {
-        HStack(spacing: 4) {
+    private func standardRow(keys: [(TIKeyDef, String)], kW: CGFloat, rowH: CGFloat, hGap: CGFloat) -> some View {
+        HStack(spacing: hGap) {
             ForEach(keys.indices, id: \.self) { i in
                 TIKeyButton(def: keys[i].0, width: kW, height: rowH) {
                     engine.dispatch(keys[i].1)
@@ -328,89 +256,105 @@ struct TI84CalculatorView: View {
         }
     }
 
-    // Bottom zone rows 8–9 with tall ENTER key
+    // Rows 1–2: 3 keys on left, D-pad spanning right 2 columns
     @ViewBuilder
-    private func bottomZone(kW: CGFloat, kH: CGFloat, rowH: CGFloat, colW: CGFloat) -> some View {
-        HStack(spacing: 0) {
-            // Left 4 columns × 2 rows
+    private func dPadZone(kW: CGFloat, rowH: CGFloat, hGap: CGFloat) -> some View {
+        let row1Left: [(TIKeyDef, String)] = [
+            (TIKeyDef(label: "2nd",    second: "",     alpha: "LOCK", color: .tiKey2nd,   accessibilityLabel: "2nd", cornerRadius: 6), "2ND"),
+            (TIKeyDef(label: "MODE",   second: "QUIT", alpha: "",     color: .tiKeyDark,  accessibilityLabel: "Mode"), "MODE"),
+            (TIKeyDef(label: "DEL",    second: "INS",  alpha: "",     color: .tiKeyDark,  accessibilityLabel: "Delete"), "DEL"),
+        ]
+        let row2Left: [(TIKeyDef, String)] = [
+            (TIKeyDef(label: "ALPHA",  second: "",      alpha: "LOCK", color: .tiKeyAlpha, accessibilityLabel: "Alpha", cornerRadius: 6), "ALPHA"),
+            (TIKeyDef(label: "X,T,θ",  second: "",      alpha: "W",    color: .tiKeyDark,  accessibilityLabel: "X T theta n"), "X,T,θ,n"),
+            (TIKeyDef(label: "STAT",   second: "",      alpha: "",     color: .tiKeyDark,  accessibilityLabel: "Stat"), "STAT"),
+        ]
+        let dpadZoneW = 2 * kW + hGap
+        let dpadZoneH = 2 * rowH
+        let dpadSize = min(dpadZoneW, dpadZoneH) * 0.82
+
+        HStack(spacing: hGap) {
             VStack(spacing: 0) {
-                HStack(spacing: 4) {
-                    ForEach(row8Left.indices, id: \.self) { i in
-                        TIKeyButton(def: row8Left[i].0, width: kW, height: rowH) { engine.dispatch(row8Left[i].1) }
+                HStack(spacing: hGap) {
+                    ForEach(row1Left.indices, id: \.self) { i in
+                        TIKeyButton(def: row1Left[i].0, width: kW, height: rowH) { engine.dispatch(row1Left[i].1) }
                     }
                 }
-                HStack(spacing: 4) {
-                    ForEach(row9Left.indices, id: \.self) { i in
-                        TIKeyButton(def: row9Left[i].0, width: kW, height: rowH) { engine.dispatch(row9Left[i].1) }
+                HStack(spacing: hGap) {
+                    ForEach(row2Left.indices, id: \.self) { i in
+                        TIKeyButton(def: row2Left[i].0, width: kW, height: rowH) { engine.dispatch(row2Left[i].1) }
                     }
                 }
             }
 
-            // Tall ENTER key (spans 2 rows)
-            Button { engine.dispatch("ENTER") } label: {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.tiKeyEnter)
-                        .shadow(color: .black.opacity(0.4), radius: 1.5, x: 0, y: 1.5)
-                    Text("ENTER")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                }
-                .frame(width: kW, height: rowH * 2 - 4)
-                .padding(.top, 4)
-            }
-            .buttonStyle(CalcPressStyle())
-            .frame(width: colW, height: rowH * 2)
-            .accessibilityLabel("Enter")
+            DPadView(dispatch: engine.dispatch, size: dpadSize)
+                .frame(width: dpadZoneW, height: dpadZoneH)
         }
     }
 
-    // MARK: Key definitions rows 4–9
+    // MARK: Key definitions
+
+    private var row0Keys: [(TIKeyDef, String)] { [
+        (TIKeyDef(label: "Y=",     second: "STAT PLT", alpha: "", color: .tiKeyGraph, accessibilityLabel: "Y equals"), "Y="),
+        (TIKeyDef(label: "WINDOW", second: "TBLSET",   alpha: "", color: .tiKeyGraph, accessibilityLabel: "Window"), "WINDOW"),
+        (TIKeyDef(label: "ZOOM",   second: "FORMAT",   alpha: "", color: .tiKeyGraph, accessibilityLabel: "Zoom"), "ZOOM"),
+        (TIKeyDef(label: "TRACE",  second: "CALC",     alpha: "", color: .tiKeyGraph, accessibilityLabel: "Trace"), "TRACE"),
+        (TIKeyDef(label: "GRAPH",  second: "TABLE",    alpha: "", color: .tiKeyGraph, accessibilityLabel: "Graph"), "GRAPH"),
+    ] }
+
+    private var row3Keys: [(TIKeyDef, String)] { [
+        (TIKeyDef(label: "MATH",  second: "TEST", alpha: "A", color: .tiKeyDark,  accessibilityLabel: "Math"), "MATH"),
+        (TIKeyDef(label: "APPS",  second: "",     alpha: "B", color: .tiKeyDark,  accessibilityLabel: "Apps"), "APPS"),
+        (TIKeyDef(label: "PRGM",  second: "",     alpha: "C", color: .tiKeyDark,  accessibilityLabel: "Program"), "PRGM"),
+        (TIKeyDef(label: "VARS",  second: "",     alpha: "",  color: .tiKeyDark,  accessibilityLabel: "Variables"), "VARS"),
+        (TIKeyDef(label: "CLEAR", second: "",     alpha: "",  color: .tiKeyClear, accessibilityLabel: "Clear"), "CLEAR"),
+    ] }
 
     private var row4Keys: [(TIKeyDef, String)] { [
-        (TIKeyDef(label: "x²",  second: "√(",   alpha: "H", color: .tiKeyDark, accessibilityLabel: "x squared"), "x²"),
-        (TIKeyDef(label: ",",   second: "EE",   alpha: "I", color: .tiKeyDark, accessibilityLabel: "Comma"), ","),
-        (TIKeyDef(label: "(",   second: "{",    alpha: "J", color: .tiKeyDark, accessibilityLabel: "Left parenthesis"), "("),
-        (TIKeyDef(label: ")",   second: "}",    alpha: "K", color: .tiKeyDark, accessibilityLabel: "Right parenthesis"), ")"),
-        (TIKeyDef(label: "÷",   second: "",     alpha: "L", color: .tiKeyDark, accessibilityLabel: "Divide"), "÷"),
+        (TIKeyDef(label: "x⁻¹", second: "MATRIX", alpha: "D", color: .tiKeyDark, accessibilityLabel: "x inverse"), "x⁻¹"),
+        (TIKeyDef(label: "sin", second: "sin⁻¹",  alpha: "E", color: .tiKeyDark, accessibilityLabel: "Sine"), "SIN"),
+        (TIKeyDef(label: "cos", second: "cos⁻¹",  alpha: "F", color: .tiKeyDark, accessibilityLabel: "Cosine"), "COS"),
+        (TIKeyDef(label: "tan", second: "tan⁻¹",  alpha: "G", color: .tiKeyDark, accessibilityLabel: "Tangent"), "TAN"),
+        (TIKeyDef(label: "^",   second: "",        alpha: "",  color: .tiKeyDark, accessibilityLabel: "Power"), "^"),
     ] }
 
     private var row5Keys: [(TIKeyDef, String)] { [
-        (TIKeyDef(label: "log", second: "10ˣ",  alpha: "M", color: .tiKeyDark, accessibilityLabel: "Log"), "LOG"),
-        (TIKeyDef(label: "7",   second: "",     alpha: "N", color: .tiKeyNum,  accessibilityLabel: "7"), "7"),
-        (TIKeyDef(label: "8",   second: "",     alpha: "O", color: .tiKeyNum,  accessibilityLabel: "8"), "8"),
-        (TIKeyDef(label: "9",   second: "",     alpha: "P", color: .tiKeyNum,  accessibilityLabel: "9"), "9"),
-        (TIKeyDef(label: "×",   second: "",     alpha: "Q", color: .tiKeyDark, accessibilityLabel: "Multiply"), "×"),
+        (TIKeyDef(label: "x²", second: "√(",  alpha: "H", color: .tiKeyDark, accessibilityLabel: "x squared"), "x²"),
+        (TIKeyDef(label: ",",  second: "EE",  alpha: "I", color: .tiKeyDark, accessibilityLabel: "Comma"), ","),
+        (TIKeyDef(label: "(",  second: "{",   alpha: "J", color: .tiKeyDark, accessibilityLabel: "Left parenthesis"), "("),
+        (TIKeyDef(label: ")",  second: "}",   alpha: "K", color: .tiKeyDark, accessibilityLabel: "Right parenthesis"), ")"),
+        (TIKeyDef(label: "÷",  second: "",    alpha: "L", color: .tiKeyDark, accessibilityLabel: "Divide"), "÷"),
     ] }
 
     private var row6Keys: [(TIKeyDef, String)] { [
-        (TIKeyDef(label: "ln",  second: "eˣ",   alpha: "R", color: .tiKeyDark, accessibilityLabel: "Natural log"), "LN"),
-        (TIKeyDef(label: "4",   second: "",     alpha: "S", color: .tiKeyNum,  accessibilityLabel: "4"), "4"),
-        (TIKeyDef(label: "5",   second: "",     alpha: "T", color: .tiKeyNum,  accessibilityLabel: "5"), "5"),
-        (TIKeyDef(label: "6",   second: "",     alpha: "U", color: .tiKeyNum,  accessibilityLabel: "6"), "6"),
-        (TIKeyDef(label: "−",   second: "",     alpha: "V", color: .tiKeyDark, accessibilityLabel: "Minus"), "-"),
+        (TIKeyDef(label: "log", second: "10ˣ", alpha: "M", color: .tiKeyDark, accessibilityLabel: "Log"), "LOG"),
+        (TIKeyDef(label: "7",   second: "",    alpha: "N", color: .tiKeyNum,  accessibilityLabel: "7"), "7"),
+        (TIKeyDef(label: "8",   second: "",    alpha: "O", color: .tiKeyNum,  accessibilityLabel: "8"), "8"),
+        (TIKeyDef(label: "9",   second: "",    alpha: "P", color: .tiKeyNum,  accessibilityLabel: "9"), "9"),
+        (TIKeyDef(label: "×",   second: "",    alpha: "Q", color: .tiKeyDark, accessibilityLabel: "Multiply"), "×"),
     ] }
 
     private var row7Keys: [(TIKeyDef, String)] { [
-        (TIKeyDef(label: "X,T,θ", second: "", alpha: "W", color: .tiKeyDark, accessibilityLabel: "X T theta n"), "X,T,θ,n"),
-        (TIKeyDef(label: "1",   second: "",    alpha: "X", color: .tiKeyNum,  accessibilityLabel: "1"), "1"),
-        (TIKeyDef(label: "2",   second: "",    alpha: "Y", color: .tiKeyNum,  accessibilityLabel: "2"), "2"),
-        (TIKeyDef(label: "3",   second: "",    alpha: "Z", color: .tiKeyNum,  accessibilityLabel: "3"), "3"),
-        (TIKeyDef(label: "+",   second: "",    alpha: "θ", color: .tiKeyDark, accessibilityLabel: "Plus"), "+"),
+        (TIKeyDef(label: "ln", second: "eˣ", alpha: "R", color: .tiKeyDark, accessibilityLabel: "Natural log"), "LN"),
+        (TIKeyDef(label: "4",  second: "",   alpha: "S", color: .tiKeyNum,  accessibilityLabel: "4"), "4"),
+        (TIKeyDef(label: "5",  second: "",   alpha: "T", color: .tiKeyNum,  accessibilityLabel: "5"), "5"),
+        (TIKeyDef(label: "6",  second: "",   alpha: "U", color: .tiKeyNum,  accessibilityLabel: "6"), "6"),
+        (TIKeyDef(label: "−",  second: "",   alpha: "V", color: .tiKeyDark, accessibilityLabel: "Minus"), "-"),
     ] }
 
-    private var row8Left: [(TIKeyDef, String)] { [
-        (TIKeyDef(label: "STAT",  second: "", alpha: "", color: .tiKeyDark, accessibilityLabel: "Stat"), "STAT"),
-        (TIKeyDef(label: "0",     second: "", alpha: "", color: .tiKeyNum,  accessibilityLabel: "0"), "0"),
-        (TIKeyDef(label: ".",     second: "", alpha: "", color: .tiKeyNum,  accessibilityLabel: "Decimal point"), "."),
-        (TIKeyDef(label: "(-)",   second: "", alpha: "", color: .tiKeyNum,  accessibilityLabel: "Negative"), "(-)"),
+    private var row8Keys: [(TIKeyDef, String)] { [
+        (TIKeyDef(label: "STO→", second: "",  alpha: "",  color: .tiKeyDark, accessibilityLabel: "Store"), "STO→"),
+        (TIKeyDef(label: "1",    second: "",  alpha: "X", color: .tiKeyNum,  accessibilityLabel: "1"), "1"),
+        (TIKeyDef(label: "2",    second: "",  alpha: "Y", color: .tiKeyNum,  accessibilityLabel: "2"), "2"),
+        (TIKeyDef(label: "3",    second: "",  alpha: "Z", color: .tiKeyNum,  accessibilityLabel: "3"), "3"),
+        (TIKeyDef(label: "+",    second: "",  alpha: "θ", color: .tiKeyDark, accessibilityLabel: "Plus"), "+"),
     ] }
 
-    private var row9Left: [(TIKeyDef, String)] { [
-        (TIKeyDef(label: "ON",    second: "OFF",    alpha: "", color: .tiKeyDark, accessibilityLabel: "On"), "ON"),
-        (TIKeyDef(label: "STO→",  second: "",       alpha: "", color: .tiKeyDark, accessibilityLabel: "Store"), "STO→"),
-        (TIKeyDef(label: "ANS",   second: "ENTRY",  alpha: "", color: .tiKeyDark, accessibilityLabel: "Answer"), "ANS"),
-        (TIKeyDef(label: "VARS",  second: "",       alpha: "", color: .tiKeyDark, accessibilityLabel: "Variables"), "VARS"),
+    private var row9Trailing: [(TIKeyDef, String)] { [
+        (TIKeyDef(label: "0",     second: "",      alpha: "",  color: .tiKeyNum,   accessibilityLabel: "0"), "0"),
+        (TIKeyDef(label: ".",     second: "",      alpha: "",  color: .tiKeyNum,   accessibilityLabel: "Decimal point"), "."),
+        (TIKeyDef(label: "(-)",   second: "ANS",   alpha: "",  color: .tiKeyNum,   accessibilityLabel: "Negative"), "(-)"),
+        (TIKeyDef(label: "ENTER", second: "ENTRY", alpha: "",  color: .tiKeyEnter, accessibilityLabel: "Enter", cornerRadius: 6), "ENTER"),
     ] }
 }
 
@@ -431,13 +375,6 @@ private struct HomeScreenView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                 Spacer()
-                Button {
-                    active = .hp12c
-                } label: {
-                    Image(systemName: "square.grid.2x2")
-                        .font(.system(size: 12))
-                        .foregroundColor(Color(white: 0.35))
-                }
             }
             .padding(.bottom, 2)
 

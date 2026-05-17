@@ -671,7 +671,9 @@ private func factorial(_ n: Int) -> Int {
         case "UP", "DOWN", "LEFT", "RIGHT":
             break
         case "(-)":
-            inputLine += "(−)"
+            inputLine += shift2nd ? "Ans" : "(−)"
+        case "^":
+            inputLine += "^"
         default:
             appendToInput(key, target: &inputLine)
         }
